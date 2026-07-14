@@ -12,9 +12,9 @@ This repo bundles the 16xBrains internal tools as npm workspaces so they can all
 | DataFlux | `16xDataFlux` | Vite + Electron |
 | ForgeDB | `16xForgeDB` | Vite + Tauri |
 | Gateway | `16xGateway` | Node service (own sub-workspaces in `packages/`) |
-| MediaDigest | `16xMediaDigest` | Tauri (no npm package yet) |
+| MediaDigest | `16xMediaDigest` | Vite + Tauri |
 | SelfHeal | `16xSelfHeal` | Electron |
-| SchemaMind | `16xShemaMind/schemamind` | Vite + Electron |
+| SchemaMind | `16xShemaMind` | Vite + Electron |
 
 ## Setup
 
@@ -39,6 +39,8 @@ npm run dataflux:dev
 npm run forgedb:dev
 npm run forgedb:app:dev     # Tauri desktop shell
 npm run gateway:start
+npm run mediadigest:dev
+npm run mediadigest:app:dev # Tauri desktop shell
 npm run selfheal:start
 npm run schemamind:dev
 ```
@@ -55,5 +57,4 @@ e.g. `npm run build --workspace=16xCodeGraph`.
 
 ## Notes
 
-- `16xMediaDigest` doesn't have a `package.json`/npm scripts yet, so it isn't part of the workspaces list.
 - Each app keeps its own `.gitignore`; the root `.gitignore` covers repo-wide excludes (`node_modules/`, build output, Rust/Tauri targets, env files, OS/IDE files).

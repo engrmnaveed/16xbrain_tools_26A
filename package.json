@@ -12,7 +12,7 @@
     "16xGateway",
     "16xMediaDigest",
     "16xSelfHeal",
-    "16xShemaMind/schemamind"
+    "16xShemaMind"
   ],
   "scripts": {
     "rag-explorer:dev": "npm run dev --workspace=16x-RAG-Explorer",
@@ -49,9 +49,9 @@
     "selfheal:start": "npm run start --workspace=16xSelfHeal",
     "selfheal:test": "npm run test --workspace=16xSelfHeal",
 
-    "schemamind:dev": "npm run dev --workspace=16xShemaMind/schemamind",
-    "schemamind:build": "npm run build --workspace=16xShemaMind/schemamind",
-    "schemamind:start": "npm run start --workspace=16xShemaMind/schemamind",
-    "schemamind:test": "npm run test --workspace=16xShemaMind/schemamind"
+    "schemamind:dev": "npm run dev --workspace=16xShemaMind",
+    "schemamind:build": "npm run build --workspace=16xShemaMind",
+    "schemamind:start": "npm run start --workspace=16xShemaMind",
+    "schemamind:test": "npm run test --workspace=16xShemaMind"
   }
 }
