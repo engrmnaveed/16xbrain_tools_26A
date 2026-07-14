@@ -1,0 +1,30 @@
+{
+  "gateway": {
+    "port": 0,
+    "socket": "/var/run/16xgateway.sock",
+    "environment": "production",
+    "secretKey": "YOUR_ROTATING_TOKENIZATION_SECRET_MIN_32_CHARS"
+  },
+  "security": {
+    "maskPii": true,
+    "allowedOutboundDomains": ["api.verified-partner.com"],
+    "maxMemoryMb": 128,
+    "timeoutMs": 3000,
+    "onGatewayUnavailable": "fail-closed",
+    "unmaskResponse": true,
+    "rescanOutput": true,
+    "maxPayloadBytes": 1048576,
+    "maxResultBytes": 1048576,
+    "tokenHexLength": 12,
+    "policyLevel": "strict",
+    "adminToken": null
+  },
+  "sandbox": {
+    "isolatePoolPerPlugin": 2,
+    "recycleAfterInvocations": 500
+  },
+  "logging": {
+    "level": "info",
+    "auditFile": "/var/log/16xgateway/audit.jsonl"
+  }
+}

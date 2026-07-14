@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16x Media Digest — Bilingual Local Transcription & Digest Tool | 16xBrains</title>
+  <meta name="description" content="Free Mac utility: transcribe Urdu/English audio & video locally with whisper.cpp, then digest it into clean English Markdown using Ollama or OpenRouter. Private by default." />
+  <meta property="og:title" content="16x Media Digest — 16xBrains Tools" />
+  <meta property="og:description" content="Local bilingual (Urdu/English) media-to-Markdown digest pipeline for macOS." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#0a0e14",
+            panel: "#111823",
+            edge: "#1e2a3a",
+            accent: "#22d3ee",
+            accent2: "#a78bfa",
+          },
+          fontFamily: {
+            mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .code-block { background: #0d1420; border: 1px solid #1e2a3a; }
+    [dir="rtl"] { font-family: "Noto Nastaliq Urdu", serif; }
+  </style>
+</head>
+<body class="bg-ink text-slate-300 antialiased">
+
+  <!-- Nav -->
+  <nav class="border-b border-edge sticky top-0 bg-ink/90 backdrop-blur z-50">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="https://16xbrains.com" class="font-mono font-bold text-white tracking-tight">16x<span class="text-accent">Brains</span></a>
+      <div class="flex items-center gap-6 text-sm">
+        <a href="https://16xbrains.com" class="hover:text-white transition">Home</a>
+        <span class="text-slate-500">Tools</span>
+        <a href="#setup" class="hover:text-white transition">Setup</a>
+        <a href="#usage" class="hover:text-white transition">Usage</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="max-w-5xl mx-auto px-6 pt-20 pb-16">
+    <p class="font-mono text-accent text-sm mb-3">tools / media-digest</p>
+    <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+      16x Media Digest
+    </h1>
+    <p class="mt-4 text-lg text-slate-400 max-w-2xl">
+      A free Mac utility that turns Urdu and English audio or video into a clean, structured
+      English Markdown digest — <span class="text-white">entirely on your machine</span>.
+      Local Whisper transcription, smart context-window chunking, and your choice of a
+      local LLM (Ollama) or a cheap cloud fallback (OpenRouter).
+    </p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href="#setup" class="px-5 py-2.5 rounded-md bg-accent text-ink font-semibold text-sm hover:opacity-90 transition">Get started</a>
+      <a href="#how" class="px-5 py-2.5 rounded-md border border-edge text-sm hover:border-accent hover:text-white transition">How it works</a>
+    </div>
+    <div class="mt-10 flex flex-wrap gap-2 font-mono text-xs">
+      <span class="px-2.5 py-1 rounded-full border border-edge">macOS (Apple Silicon)</span>
+      <span class="px-2.5 py-1 rounded-full border border-edge">Tauri + React</span>
+      <span class="px-2.5 py-1 rounded-full border border-edge">whisper.cpp</span>
+      <span class="px-2.5 py-1 rounded-full border border-edge">Ollama / OpenRouter</span>
+      <span class="px-2.5 py-1 rounded-full border border-edge text-accent">اردو + English</span>
+    </div>
+  </header>
+
+  <!-- Pipeline diagram -->
+  <section id="how" class="max-w-5xl mx-auto px-6 py-12 border-t border-edge">
+    <h2 class="text-2xl font-bold text-white mb-2">How it works</h2>
+    <p class="text-slate-400 mb-8 max-w-2xl">The app orchestrates the whole pipeline deterministically. The LLM only ever sees one small, well-scoped task at a time — which is why cheap 7–9B models produce reliable digests.</p>
+    <div class="grid md:grid-cols-5 gap-3 font-mono text-sm">
+      <div class="bg-panel border border-edge rounded-lg p-4"><div class="text-accent mb-1">01</div><div class="text-white font-semibold mb-1">Drop media</div><div class="text-slate-400 text-xs leading-relaxed">Drag in any .mp4, .mov, .mp3, .m4a, .wav — lectures, podcasts, meetings, vlogs.</div></div>
+      <div class="bg-panel border border-edge rounded-lg p-4"><div class="text-accent mb-1">02</div><div class="text-white font-semibold mb-1">Extract audio</div><div class="text-slate-400 text-xs leading-relaxed">FFmpeg converts to 16&nbsp;kHz mono WAV — the exact format Whisper needs.</div></div>
+      <div class="bg-panel border border-edge rounded-lg p-4"><div class="text-accent mb-1">03</div><div class="text-white font-semibold mb-1">Transcribe locally</div><div class="text-slate-400 text-xs leading-relaxed">whisper.cpp runs on-device with auto Urdu/English detection (or manual toggle), keeping timestamps.</div></div>
+      <div class="bg-panel border border-edge rounded-lg p-4"><div class="text-accent mb-1">04</div><div class="text-white font-semibold mb-1">Smart chunking</div><div class="text-slate-400 text-xs leading-relaxed">Transcript splits on sentence boundaries (both ۔ and .) into ~500-word chunks that never overflow a small model's context.</div></div>
+      <div class="bg-panel border border-edge rounded-lg p-4"><div class="text-accent mb-1">05</div><div class="text-white font-semibold mb-1">Digest</div><div class="text-slate-400 text-xs leading-relaxed">Each chunk is translated (if Urdu) and summarized, then stitched into one timestamped Markdown document. Copy with one click.</div></div>
+    </div>
+  </section>
+
+  <!-- Privacy / features -->
+  <section class="max-w-5xl mx-auto px-6 py-12 border-t border-edge">
+    <div class="grid md:grid-cols-3 gap-6">
+      <div>
+        <h3 class="text-white font-semibold mb-2">Private by default</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">With Ollama selected, nothing leaves your Mac — media, transcript, and digest all stay local. OpenRouter is an explicit opt-in fallback.</p>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold mb-2">Built for bilingual reality</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Handles pure Urdu, pure English, and the code-switched mix real conversations actually are. Output is always clean English Markdown.</p>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold mb-2">Small-model friendly</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Deterministic chunking keeps every LLM request under ~2.2k tokens, so 4k-context models like Gemma&nbsp;2 9B work reliably.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup docs -->
+  <section id="setup" class="max-w-5xl mx-auto px-6 py-12 border-t border-edge">
+    <h2 class="text-2xl font-bold text-white mb-8">Setup guide</h2>
+
+    <div class="space-y-10">
+      <div>
+        <h3 class="text-white font-semibold mb-3"><span class="text-accent font-mono mr-2">1.</span>Install the app</h3>
+        <p class="text-sm text-slate-400 mb-3">Download the latest <code class="text-accent">.dmg</code> from the link above (coming soon) or build from source:</p>
+        <pre class="code-block rounded-lg p-4 text-sm font-mono overflow-x-auto"><code>git clone https://github.com/16xbrains/media-digest
+cd media-digest &amp;&amp; npm install &amp;&amp; npm run tauri build</code></pre>
+      </div>
+
+      <div>
+        <h3 class="text-white font-semibold mb-3"><span class="text-accent font-mono mr-2">2.</span>Install FFmpeg &amp; whisper.cpp</h3>
+        <pre class="code-block rounded-lg p-4 text-sm font-mono overflow-x-auto"><code>brew install ffmpeg
+brew install whisper-cpp</code></pre>
+        <p class="text-sm text-slate-400 mt-3">Then download a multilingual Whisper model. <code class="text-accent">small</code> is a good speed/accuracy balance for Urdu; use <code class="text-accent">medium</code> for noisy audio:</p>
+        <pre class="code-block rounded-lg p-4 text-sm font-mono overflow-x-auto mt-3"><code>curl -L -o ~/whisper-models/ggml-small.bin \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin</code></pre>
+        <p class="text-xs text-slate-500 mt-2">Point the app to this model file in Settings → Transcription. Avoid <code>.en</code> models — they are English-only.</p>
+      </div>
+
+      <div>
+        <h3 class="text-white font-semibold mb-3"><span class="text-accent font-mono mr-2">3.</span>Choose your LLM provider</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-panel border border-edge rounded-lg p-5">
+            <div class="text-white font-semibold mb-1">Option A — Ollama <span class="text-xs text-accent font-normal">(local, free, private)</span></div>
+            <pre class="code-block rounded-md p-3 text-xs font-mono overflow-x-auto mt-3"><code>brew install ollama
+ollama serve
+ollama pull gemma2:9b   # or qwen2.5:7b</code></pre>
+            <p class="text-xs text-slate-500 mt-3">In the app: Settings → Provider → Ollama. Default endpoint <code>http://localhost:11434</code> is pre-filled. <code>qwen2.5:7b</code> has notably strong Urdu.</p>
+          </div>
+          <div class="bg-panel border border-edge rounded-lg p-5">
+            <div class="text-white font-semibold mb-1">Option B — OpenRouter <span class="text-xs text-accent2 font-normal">(cloud fallback, ~pennies/hour of audio)</span></div>
+            <ol class="text-xs text-slate-400 mt-3 space-y-1.5 list-decimal list-inside">
+              <li>Create a key at <span class="text-accent2">openrouter.ai/keys</span></li>
+              <li>Settings → Provider → OpenRouter → paste key</li>
+              <li>Pick a cheap model, e.g. <code>google/gemini-flash-1.5</code></li>
+            </ol>
+            <p class="text-xs text-slate-500 mt-3">Only transcript text is sent — never your media files. The key is stored in the macOS Keychain.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage docs -->
+  <section id="usage" class="max-w-5xl mx-auto px-6 py-12 border-t border-edge">
+    <h2 class="text-2xl font-bold text-white mb-8">Using the app</h2>
+    <div class="space-y-6 max-w-3xl">
+      <div class="flex gap-4">
+        <div class="font-mono text-accent shrink-0 w-8">1</div>
+        <div><span class="text-white font-medium">Drop a file.</span> <span class="text-sm text-slate-400">Drag any audio/video onto the window. The status bar walks through each stage: <code class="text-xs">Extracting audio → Transcribing → Processing chunk 3/7 → Done</code>. The UI never freezes — everything heavy runs in background processes.</span></div>
+      </div>
+      <div class="flex gap-4">
+        <div class="font-mono text-accent shrink-0 w-8">2</div>
+        <div><span class="text-white font-medium">Set the language (optional).</span> <span class="text-sm text-slate-400">Auto-detect works well; force <code class="text-xs">اردو</code> or <code class="text-xs">English</code> from the toggle if a heavy accent or code-switching confuses detection.</span></div>
+      </div>
+      <div class="flex gap-4">
+        <div class="font-mono text-accent shrink-0 w-8">3</div>
+        <div><span class="text-white font-medium">Review the digest.</span> <span class="text-sm text-slate-400">Each section is headed by its media timestamp range (e.g. <code class="text-xs">## [12:40–15:05]</code>) so you can jump back to the source. Hit <span class="text-white">Copy to Clipboard</span> and paste into Notion, Obsidian, or a doc.</span></div>
+      </div>
+      <div class="flex gap-4">
+        <div class="font-mono text-accent shrink-0 w-8">4</div>
+        <div><span class="text-white font-medium">Rerun cheaply.</span> <span class="text-sm text-slate-400">Transcripts are cached — switching provider or model re-digests without re-transcribing.</span></div>
+      </div>
+    </div>
+
+    <div class="mt-10 bg-panel border border-edge rounded-lg p-5 max-w-3xl">
+      <div class="text-xs font-mono text-slate-500 mb-2">example output</div>
+      <pre class="text-sm font-mono text-slate-300 overflow-x-auto leading-relaxed"><code># Digest: team-standup-2026-07-10.mp4
+*Detected language: Urdu · 42 min · 9 sections · gemma2:9b (local)*
+
+## [00:00–04:32]
+- Deployment of v2.3 delayed to Friday due to failing payment-gateway tests
+- Asif to patch the Stripe webhook retry logic before Thursday
+...</code></pre>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-5xl mx-auto px-6 py-12 border-t border-edge">
+    <h2 class="text-2xl font-bold text-white mb-8">FAQ</h2>
+    <div class="space-y-6 max-w-3xl text-sm">
+      <div>
+        <div class="text-white font-medium mb-1">Does my audio ever leave my Mac?</div>
+        <p class="text-slate-400">Never. Transcription is always local (whisper.cpp). With Ollama, the digest step is local too. Only if you opt into OpenRouter is transcript <em>text</em> sent to the cloud.</p>
+      </div>
+      <div>
+        <div class="text-white font-medium mb-1">Why chunk the transcript instead of sending it all at once?</div>
+        <p class="text-slate-400">Small local models have 4k–8k token context windows and degrade badly when overloaded. The app splits transcripts on sentence boundaries into ~500-word chunks with one sentence of overlap, so every request stays small and every summary stays sharp.</p>
+      </div>
+      <div>
+        <div class="text-white font-medium mb-1">How fast is it?</div>
+        <p class="text-slate-400">On an M-series Mac with the <code>small</code> Whisper model, transcription runs several times faster than real time. A 1-hour Urdu lecture typically digests end-to-end in 10–15 minutes fully locally.</p>
+      </div>
+      <div>
+        <div class="text-white font-medium mb-1">Which languages are supported?</div>
+        <p class="text-slate-400">Urdu and English (including mixed/code-switched speech) are first-class. Whisper itself is multilingual, so other languages often work — but they're untested.</p>
+      </div>
+      <div>
+        <div class="text-white font-medium mb-1">What does it cost?</div>
+        <p class="text-slate-400">The tool is free. Fully local usage costs nothing. Via OpenRouter, a 1-hour recording is typically under $0.02 with a flash-class model.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-edge mt-8">
+    <div class="max-w-5xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between gap-4 text-sm text-slate-500">
+      <div>© <span id="year"></span> 16xBrains — Elite Technical Interventions &amp; Engineering Governance</div>
+      <div class="flex gap-6">
+        <a href="https://16xbrains.com" class="hover:text-white transition">16xbrains.com</a>
+        <a href="mailto:hello@16xbrains.com" class="hover:text-white transition">Contact</a>
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

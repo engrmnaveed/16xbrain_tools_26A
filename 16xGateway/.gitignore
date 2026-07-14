@@ -1,0 +1,10 @@
+node_modules/
+dist/
+packages/*/dist/
+*.tsbuildinfo
+plugins/
+*.sock
+.DS_Store
+npm-debug.log*
+/tmp-*
+audit.jsonl

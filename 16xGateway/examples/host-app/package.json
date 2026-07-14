@@ -1,0 +1,14 @@
+{
+  "name": "16xgateway-example-host-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Example CRM host app demonstrating direct-call and middleware integration with 16xGateway.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "fastify": "4.28.1",
+    "@16xbrains/gateway-client": "1.0.0"
+  }
+}

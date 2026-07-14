@@ -1,0 +1,6 @@
+node_modules/
+dist/
+sidecar/dist/
+src-tauri/target/
+*.db
+.DS_Store

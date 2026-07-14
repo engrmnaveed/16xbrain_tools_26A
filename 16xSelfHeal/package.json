@@ -1,0 +1,55 @@
+{
+  "name": "selfheal-visualizer",
+  "productName": "16x SelfHeal",
+  "version": "1.0.0",
+  "description": "Self-Healing System Visualizer - chaos-test and visualize high-availability microservice architectures, with deep AI assistance via OpenRouter.",
+  "main": "electron/main.js",
+  "author": "16xBrains <hello@16xbrains.com>",
+  "homepage": "https://16xbrains.com/tools/selfheal",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node tests/engine.test.mjs",
+    "dist": "electron-builder --mac --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.16xbrains.selfheal",
+    "productName": "16x SelfHeal",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}

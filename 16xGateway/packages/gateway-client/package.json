@@ -1,0 +1,26 @@
+{
+  "name": "@16xbrains/gateway-client",
+  "version": "1.0.0",
+  "description": "Host SDK for 16xGateway: lazy connect, backoff, circuit breaker, typed results, middleware/events adapters.",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/src/index.d.ts", "import": "./dist/src/index.js" },
+    "./middleware": { "types": "./dist/src/middleware.d.ts", "import": "./dist/src/middleware.js" },
+    "./events": { "types": "./dist/src/events.d.ts", "import": "./dist/src/events.js" }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test dist/tests/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "undici": "6.19.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.15",
+    "typescript": "5.5.4"
+  }
+}

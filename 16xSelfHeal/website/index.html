@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>16x SelfHeal — Self-Healing System Visualizer | 16xBrains Tools</title>
+<meta name="description" content="A free desktop tool that makes high availability concrete. Simulate server crashes, watch traffic reroute, circuit breakers trip and replacements spin up — with an AI SRE copilot powered by OpenRouter. macOS & Windows." />
+<meta property="og:title" content="16x SelfHeal — Self-Healing System Visualizer" />
+<meta property="og:description" content="Break systems on purpose. Watch them heal themselves. Free desktop tool by 16xBrains for macOS & Windows." />
+<style>
+:root{--bg:#0a0e17;--bg2:#0e1420;--bg3:#131b2c;--line:rgba(120,145,190,.14);--text:#dbe6ff;--muted:#8ea2c9;--accent:#4da3ff;--good:#2dd4a7;--warn:#f5b342;--bad:#ff4d5e;--mono:"SF Mono","Cascadia Code",Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,"Segoe UI",Inter,Roboto,sans-serif}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+nav{display:flex;align-items:center;gap:22px;padding:18px 0;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;font-size:18px}
+.brand .x{background:linear-gradient(135deg,#4da3ff,#2dd4a7);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav .links{margin-left:auto;display:flex;gap:22px;font-size:14px;color:var(--muted)}
+nav .links a{color:var(--muted)} nav .links a:hover{color:var(--text)}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--good);border:1px solid rgba(45,212,167,.35);border-radius:20px;padding:4px 14px;margin-bottom:18px}
+header.hero{padding:84px 0 40px;text-align:center;background:radial-gradient(900px 420px at 50% -10%,#12233f 0%,transparent 70%)}
+h1{font-size:clamp(34px,5.5vw,58px);line-height:1.12;font-weight:800;letter-spacing:-.02em}
+h1 .grad{background:linear-gradient(135deg,#4da3ff,#2dd4a7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{max-width:680px;margin:22px auto 0;color:var(--muted);font-size:19px}
+.cta-row{display:flex;gap:14px;justify-content:center;margin:34px 0 10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px;border:1px solid var(--line);color:var(--text);transition:.2s}
+.btn.primary{background:linear-gradient(135deg,#2563b8,#3b82d6);border-color:transparent}
+.btn.primary:hover{box-shadow:0 0 26px rgba(77,163,255,.45);transform:translateY(-1px)}
+.btn.ghost:hover{border-color:var(--accent)}
+.cta-note{font-size:13px;color:var(--muted)}
+.demo{margin:56px auto 0;max-width:920px;border:1px solid var(--line);border-radius:16px;background:var(--bg2);overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.demo-bar{display:flex;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.demo-bar i{width:11px;height:11px;border-radius:50%;display:block}
+.demo-bar i:nth-child(1){background:#ff5f57}.demo-bar i:nth-child(2){background:#febc2e}.demo-bar i:nth-child(3){background:#28c840}
+.demo-bar span{margin-left:8px;font-size:12px;color:var(--muted)}
+#demo-canvas{display:block;width:100%;height:340px;cursor:pointer}
+.demo-hint{text-align:center;font-size:13px;color:var(--warn);padding:10px;border-top:1px solid var(--line)}
+section{padding:72px 0;border-top:1px solid var(--line)}
+h2{font-size:32px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px}
+.lead{color:var(--muted);max-width:640px;margin-bottom:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:24px}
+.card .ico{font-size:26px}
+.card h3{font-size:17px;margin:12px 0 6px}
+.card p{font-size:14px;color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:0}
+.step{display:flex;gap:20px;padding:20px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border:none}
+.step .n{counter-increment:s;flex-shrink:0;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--good)}
+.step .n::before{content:counter(s)}
+.step h3{font-size:16px;margin-bottom:4px}
+.step p{font-size:14px;color:var(--muted)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.ai-chip{display:inline-block;font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:4px 4px 0 0;color:#aecdff}
+.quote{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:12px;padding:20px 24px;font-size:15px;color:#b9c7e4;margin-top:24px}
+.docs h3{font-size:18px;color:#aecdff;margin:30px 0 8px}
+.docs p,.docs li{font-size:15px;color:#b9c7e4}
+.docs ul{padding-left:22px;margin-top:6px}
+.docs code,.kbd{font-family:var(--mono);font-size:13px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+.pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.pill{font-size:13px;border:1px solid var(--line);border-radius:20px;padding:5px 14px;color:var(--muted)}
+footer{padding:44px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+.dl-icons{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div class="brand"><span class="x">16x</span>Brains <span style="color:var(--muted);font-weight:400">/ tools</span></div>
+  <div class="links">
+    <a href="#features">Features</a><a href="#how">How it works</a><a href="#ai">AI Copilot</a><a href="#docs">Docs</a><a href="#download">Download</a>
+  </div>
+</nav>
+</div>
+
+<header class="hero">
+<div class="wrap">
+  <span class="tag">Free desktop tool · macOS & Windows</span>
+  <h1>Break systems on purpose.<br /><span class="grad">Watch them heal themselves.</span></h1>
+  <p class="sub"><b>16x SelfHeal</b> is a live network-topology sandbox that makes <i>high availability</i> concrete.
+  Crash a server. Kill a database primary. Unleash the chaos monkey. Then watch load balancers reroute,
+  circuit breakers trip, replicas get promoted, and replacements spin up — in real time.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="#download">⬇ Download free</a>
+    <a class="btn ghost" href="#docs">Read the docs</a>
+  </div>
+  <p class="cta-note">No account. No telemetry. AI features optional (bring your own OpenRouter key).</p>
+
+  <div class="demo">
+    <div class="demo-bar"><i></i><i></i><i></i><span>16x SelfHeal — live preview</span></div>
+    <canvas id="demo-canvas"></canvas>
+    <div class="demo-hint">☝ this preview is real — click any hexagon to kill it and watch the system recover</div>
+  </div>
+</div>
+</header>
+
+<div class="wrap">
+
+<section id="features">
+  <h2>Feature-rich, on purpose</h2>
+  <p class="lead">Built as a client-facing showcase <i>and</i> an internal engineering sandbox.</p>
+  <div class="grid">
+    <div class="card"><span class="ico">💥</span><h3>One-click chaos engineering</h3><p>Kill instances, crash DB primaries, cut networks, inject latency, spike CPU and traffic — or let the 🐒 Chaos Monkey run wild. Scripted multi-step incident scenarios included.</p></div>
+    <div class="card"><span class="ico">🩺</span><h3>Real self-healing mechanics</h3><p>Health-check detection windows, least-connections load balancing, retries, per-edge circuit breakers (open → half-open → closed), degraded fallbacks, K8s-style replacement pods and DB leader election.</p></div>
+    <div class="card"><span class="ico">📊</span><h3>Live SRE metrics</h3><p>Per-second success rate, throughput, latency and healthy-pod counts — plus measured <b>MTTR</b> for every incident, so you can compare architectures quantitatively.</p></div>
+    <div class="card"><span class="ico">🤖</span><h3>AI that drives the simulator</h3><p>Not a chat gimmick: the OpenRouter-powered copilot sees live topology + events, writes post-mortems, scores your architecture and turns plain English into executable chaos scenarios.</p></div>
+    <div class="card"><span class="ico">🛠</span><h3>Editable topologies</h3><p>Three presets (web app, e-commerce microservices, event pipeline), replica scaling with live orchestration, and custom service groups with their own dependencies.</p></div>
+    <div class="card"><span class="ico">🎙</span><h3>Built for demos</h3><p>Incident banner, explosion effects, event narration in client-friendly words. Make "why you're paying for robust architecture" visible in 60 seconds.</p></div>
+  </div>
+</section>
+
+<section id="how">
+  <h2>The self-healing story, visualized</h2>
+  <p class="lead">Every crash plays out the same sequence your production stack runs — now visible.</p>
+  <div class="steps">
+    <div class="step"><span class="n"></span><div><h3>Failure</h3><p>You kill an instance. It stays in the load-balancer pool for a moment — requests hitting it fail and <b>retry against healthy replicas</b>. That brief red flicker is the cost of detection latency, made visible.</p></div></div>
+    <div class="step"><span class="n"></span><div><h3>Detection</h3><p>Health checks fail twice in a row → the load balancer ejects the node from its pool. Error rate recovers even though the node is still dead.</p></div></div>
+    <div class="step"><span class="n"></span><div><h3>Compensation</h3><p>Traffic redistributes by least-connections. If a dependency is unreachable, circuit breakers open and services serve <b>degraded fallbacks</b> instead of hard failures. DB replicas win leader election and get promoted.</p></div></div>
+    <div class="step"><span class="n"></span><div><h3>Recovery</h3><p>The orchestrator boots a replacement (watch it turn blue → green and rejoin the pool). The incident closes and <b>MTTR is recorded</b> in your metrics.</p></div></div>
+  </div>
+</section>
+
+<section id="ai">
+  <div class="split">
+    <div>
+      <h2>An SRE copilot,<br />deeply integrated</h2>
+      <p class="lead" style="margin-bottom:16px">Connect any model via <b>OpenRouter</b> — Claude, GPT, Gemini, Llama, 300+ more. The AI receives the live topology, per-second metrics and the real event log, and can <b>act on the simulator</b> (with your click of approval).</p>
+      <span class="ai-chip">🏗 resilience score /100 + auto-fix actions</span>
+      <span class="ai-chip">📋 post-mortems from the real timeline</span>
+      <span class="ai-chip">✨ "simulate Black Friday" → executable scenario</span>
+      <span class="ai-chip">🎙 plain-words incident narration</span>
+      <span class="ai-chip">💬 grounded copilot chat</span>
+    </div>
+    <div class="quote">
+      <b style="color:var(--text)">You:</b> simulate a region outage during peak traffic<br /><br />
+      <b style="color:var(--good)">Copilot:</b> This scenario tests whether your checkout path survives losing the cache tier under 3× load. Hypothesis: orders degrade gracefully via fallbacks, MTTR &lt; 30s…<br /><br />
+      <span class="kbd">▶ Run 6 actions</span> <span style="color:var(--muted);font-size:13px">— traffic ×3 → partition redis-cache → kill orders-b → …</span>
+    </div>
+  </div>
+</section>
+
+<section id="docs" class="docs">
+  <h2>Documentation</h2>
+  <p class="lead">The same guide ships inside the app (📖 Docs button).</p>
+
+  <h3>Getting started</h3>
+  <p>Download, install, launch — the e-commerce topology loads with live traffic flowing. Push the big red <b>💥 INJECT CHAOS</b> button. That's it, you're chaos engineering.</p>
+
+  <h3>Reading the map</h3>
+  <ul>
+    <li>Hexagons are running instances; particles are live requests. Bar under each node = load.</li>
+    <li><b style="color:var(--good)">Green</b> healthy · <b style="color:var(--warn)">amber</b> degraded · <b style="color:var(--accent)">blue</b> booting · <b style="color:var(--bad)">red</b> dead.</li>
+    <li>Hover a node for live stats. <b>Click a node to kill it.</b> Scroll to zoom, drag to pan, double-click to fit.</li>
+    <li>Edge badges: ⛔ circuit breaker open · 🔎 half-open (probing) · ✂️ network partition.</li>
+  </ul>
+
+  <h3>Chaos controls</h3>
+  <ul>
+    <li><b>Inject chaos</b> — kill a random healthy instance.</li>
+    <li><b>Kill DB primary</b> — triggers replica leader election and promotion.</li>
+    <li><b>Partition / latency / CPU spike</b> — target any group via the selector; effects auto-expire.</li>
+    <li><b>Traffic ×3</b> — surge test; overloaded nodes degrade and shed errors.</li>
+    <li><b>Chaos Monkey</b> — continuous random failures until caged.</li>
+    <li><b>Scenarios</b> — scripted multi-step incidents (Black Friday, flaky datacenter, cascading failure), or describe your own in the ✨ box and let AI build it.</li>
+  </ul>
+
+  <h3>Topology editing</h3>
+  <p>Scale any group with +/− (watch the orchestrator do the work), add custom service groups with dependencies, or switch presets: <span class="kbd">1</span> Simple Web App · <span class="kbd">2</span> E-commerce · <span class="kbd">3</span> Event Pipeline.</p>
+
+  <h3>AI setup</h3>
+  <p>Settings → paste an <a href="https://openrouter.ai/keys" rel="noopener">OpenRouter API key</a> → pick a model (or keep <code>openrouter/auto</code>). The key stays on your machine (OS-keychain encrypted where available) and is only sent to openrouter.ai. Everything except AI works offline with no key.</p>
+
+  <h3>Shortcuts</h3>
+  <p><span class="kbd">Space</span> pause · <span class="kbd">K</span> kill random · <span class="kbd">M</span> chaos monkey · <span class="kbd">F</span> fit view · <span class="kbd">?</span> in-app guide</p>
+
+  <h3>Running from source</h3>
+  <p><code>npm install</code> → <code>npm start</code> · engine test suite: <code>npm test</code> · installers: <code>npm run dist:mac</code> / <code>npm run dist:win</code>. Node 18+, zero runtime dependencies.</p>
+</section>
+
+<section id="download">
+  <h2>Download</h2>
+  <p class="lead">Free for public showcase and internal use. v1.0.0</p>
+  <div class="cta-row" style="justify-content:flex-start">
+    <a class="btn primary" href="#" data-dl="mac"> Download for macOS<span style="font-weight:400;font-size:12px">(.dmg · Apple Silicon + Intel)</span></a>
+    <a class="btn primary" href="#" data-dl="win">⊞ Download for Windows<span style="font-weight:400;font-size:12px">(installer · x64)</span></a>
+    <a class="btn ghost" href="#" data-dl="src">⌥ Source code</a>
+  </div>
+  <div class="pill-row">
+    <span class="pill">No account required</span><span class="pill">No telemetry</span><span class="pill">Works fully offline (AI optional)</span><span class="pill">MIT licensed</span>
+  </div>
+  <p class="dl-icons" style="margin-top:16px"><!-- TODO: point the three buttons above at your released artifacts (GitHub Releases / S3) --></p>
+</section>
+
+</div>
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%">
+    <span>© 2026 <a href="https://16xbrains.com">16xBrains</a> — we build systems that heal themselves.</span>
+    <span>16x SelfHeal is a simulation for education & demos; validate real configs in staging.</span>
+  </div>
+</footer>
+
+<script>
+/* ── Live hero demo: miniature self-healing sim (self-contained) ── */
+(() => {
+const cv = document.getElementById('demo-canvas');
+const ctx = cv.getContext('2d');
+const C = { healthy:'#2dd4a7', dead:'#ff4d5e', starting:'#4da3ff', edge:'rgba(120,145,190,.18)', p:'#67e8f9' };
+let W, H, dpr;
+function resize(){ dpr = devicePixelRatio||1; W = cv.clientWidth; H = 340; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); layout(); }
+let nodes=[], edges=[], parts=[], boom=[];
+function mk(id,x,y,label,icon){ return {id,fx:x,fy:y,x:0,y:0,label,icon,state:'healthy',t:0}; }
+function layout(){
+  const xs=(f)=>60+f*(W-120), ys=(f)=>40+f*(H-90);
+  nodes=[ mk('c',0,.5,'internet','🌐'), mk('lb',.22,.5,'load-balancer','⚖'),
+    mk('a',.5,.15,'web-a','⬢'), mk('b',.5,.5,'web-b','⬢'), mk('d',.5,.85,'web-c','⬢'),
+    mk('db',.82,.32,'postgres ★','🗄'), mk('r',.82,.72,'replica','🗄') ];
+  for(const n of nodes){ n.x=xs(n.fx); n.y=ys(n.fy); }
+  edges=[['c','lb'],['lb','a'],['lb','b'],['lb','d'],['a','db'],['b','db'],['d','db'],['db','r']];
+}
+const get=(id)=>nodes.find(n=>n.id===id);
+function spawn(){
+  const webs=['a','b','d'].map(get).filter(n=>n.state==='healthy');
+  if(!webs.length) return;
+  const w=webs[Math.floor(Math.random()*webs.length)];
+  parts.push({path:['c','lb',w.id,'db'],i:0,p:0,err:false});
+}
+cv.addEventListener('click',(e)=>{
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const n=nodes.find(n=>Math.hypot(n.x-mx,n.y-my)<26 && !['c','lb'].includes(n.id));
+  if(n && n.state==='healthy'){ n.state='dead'; n.t=0; boom.push({x:n.x,y:n.y,t:0});
+    setTimeout(()=>{ n.state='starting'; n.t=0; },2200);
+    setTimeout(()=>{ n.state='healthy'; },5200); }
+});
+function hex(cx,cy,r){ ctx.beginPath(); for(let i=0;i<=6;i++){ const a=Math.PI/6+i*Math.PI/3; const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a); i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath(); }
+let last=performance.now(), acc=0;
+function frame(now){
+  const dt=now-last; last=now; acc+=dt;
+  if(acc>140){ acc=0; spawn(); }
+  ctx.clearRect(0,0,W,H);
+  for(const [f,t] of edges){ const a=get(f),b=get(t); const mx=(a.x+b.x)/2;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.bezierCurveTo(mx,a.y,mx,b.y,b.x,b.y);
+    ctx.strokeStyle=C.edge; ctx.lineWidth=1.3; ctx.stroke(); }
+  for(const p of parts){
+    p.p+=dt/420;
+    if(p.p>=1){ p.i++; p.p=0;
+      const nxt=get(p.path[p.i+1]);
+      const cur=get(p.path[p.i]);
+      if(cur&&cur.state==='dead'){ p.err=true; p.dead=true; }
+      if(p.i>=p.path.length-1) p.done=true;
+      if(nxt&&nxt.state!=='healthy'){ // reroute to healthy web
+        const alt=['a','b','d'].map(get).find(n=>n.state==='healthy');
+        if(alt&&p.i===1) p.path[2]=alt.id; }
+    }
+    if(p.done||p.dead) continue;
+    const a=get(p.path[p.i]), b=get(p.path[p.i+1]); if(!a||!b){p.done=true;continue;}
+    const mx=(a.x+b.x)/2, t=p.p, u=1-t;
+    const x=u*u*u*a.x+3*u*u*t*mx+3*u*t*t*mx+t*t*t*b.x;
+    const y=u*u*u*a.y+3*u*u*t*a.y+3*u*t*t*b.y+t*t*t*b.y;
+    ctx.beginPath(); ctx.arc(x,y,2.4,0,7); ctx.fillStyle=p.err?'#f5b342':C.p;
+    ctx.shadowColor=C.p; ctx.shadowBlur=7; ctx.fill(); ctx.shadowBlur=0;
+  }
+  parts=parts.filter(p=>!p.done&&!p.dead);
+  for(const n of nodes){
+    const col=n.state==='healthy'?C.healthy:n.state==='dead'?C.dead:C.starting;
+    n.t+=dt;
+    hex(n.x,n.y,20); ctx.fillStyle='#101828'; ctx.shadowColor=col; ctx.shadowBlur=12; ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke();
+    ctx.font='13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.state==='dead'?'☠':n.icon,n.x,n.y);
+    ctx.font='10px sans-serif'; ctx.fillStyle='#8ea2c9'; ctx.fillText(n.label,n.x,n.y+34);
+    if(n.state==='starting'){ ctx.fillStyle=C.starting; ctx.fillText('booting…',n.x,n.y+46); }
+  }
+  for(const b of boom){ b.t+=dt; const q=b.t/650; if(q<1){
+    ctx.beginPath(); ctx.arc(b.x,b.y,8+q*46,0,7); ctx.strokeStyle=`rgba(255,77,94,${(1-q)*.8})`; ctx.lineWidth=3*(1-q); ctx.stroke(); } }
+  boom=boom.filter(b=>b.t<650);
+  requestAnimationFrame(frame);
+}
+resize(); addEventListener('resize',resize); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

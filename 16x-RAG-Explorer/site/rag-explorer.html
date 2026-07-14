@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RAG Explorer — See how AI actually reads your data | 16xBrains Tools</title>
+<meta name="description" content="A free desktop tool that visualizes Retrieval-Augmented Generation: watch your question fly through a 3D galaxy of your documents and see exactly which passages ground the AI's answer. macOS & Windows." />
+<meta property="og:title" content="RAG Explorer — See how AI actually reads your data" />
+<meta property="og:description" content="A 3D visual debugger and demo for enterprise RAG. Local embeddings, OpenRouter LLMs, zero hallucination hand-waving." />
+<meta property="og:type" content="website" />
+<style>
+:root {
+  --bg: #07080f;
+  --bg-2: #0d0f1a;
+  --bg-3: #131628;
+  --border: rgba(120,140,220,.14);
+  --border-strong: rgba(120,140,220,.3);
+  --text: #e6e9f5;
+  --muted: #8b93b5;
+  --accent: #5eead4;
+  --accent-2: #7dd3fc;
+  --violet: #a78bfa;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  --mono: 'SF Mono','Cascadia Code',Consolas,monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font); color: var(--text);
+  background: radial-gradient(ellipse at 50% -20%, #141a38 0%, var(--bg) 55%);
+  line-height: 1.65;
+}
+a { color: var(--accent-2); text-decoration: none; }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+/* nav */
+nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(7,8,15,.8); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+nav .wrap { display: flex; align-items: center; gap: 24px; height: 58px; }
+.nav-brand { font-weight: 800; letter-spacing: .5px; color: var(--text); }
+.nav-brand span { color: var(--accent); }
+.nav-links { margin-left: auto; display: flex; gap: 22px; font-size: 14px; }
+.nav-links a { color: var(--muted); }
+.nav-links a:hover { color: var(--text); }
+.nav-tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: rgba(94,234,212,.1); border: 1px solid rgba(94,234,212,.3); color: var(--accent); }
+
+/* hero */
+.hero { position: relative; padding: 90px 0 70px; overflow: hidden; }
+#galaxy-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .85; }
+.hero .wrap { position: relative; z-index: 2; text-align: center; }
+.hero-kicker {
+  display: inline-block; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent); border: 1px solid rgba(94,234,212,.35); border-radius: 99px;
+  padding: 5px 16px; margin-bottom: 26px; background: rgba(94,234,212,.06);
+}
+h1 { font-size: clamp(34px, 5.5vw, 58px); line-height: 1.12; font-weight: 800; letter-spacing: -1px; }
+h1 .grad {
+  background: linear-gradient(100deg, var(--accent), var(--accent-2), var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-sub { max-width: 640px; margin: 22px auto 34px; color: var(--muted); font-size: 18px; }
+.hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 9px; padding: 13px 26px;
+  border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border-strong); background: var(--bg-3); color: var(--text);
+  transition: all .18s;
+}
+.btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.btn-primary { background: linear-gradient(135deg, #0ea5a3, #0284c7); border-color: transparent; }
+.btn-primary:hover { filter: brightness(1.15); border-color: transparent; }
+.hero-note { margin-top: 16px; font-size: 13px; color: var(--muted); }
+
+/* sections */
+section { padding: 76px 0; }
+section.alt { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.sec-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+h2 { font-size: clamp(26px, 3.4vw, 36px); font-weight: 800; letter-spacing: -.5px; margin-bottom: 14px; }
+.sec-sub { color: var(--muted); max-width: 620px; font-size: 16px; margin-bottom: 44px; }
+
+.grid { display: grid; gap: 18px; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.card {
+  background: var(--bg-3); border: 1px solid var(--border); border-radius: 16px;
+  padding: 26px; transition: border-color .2s;
+}
+.card:hover { border-color: var(--border-strong); }
+.card .icon { font-size: 26px; margin-bottom: 14px; display: block; }
+.card h3 { font-size: 17px; margin-bottom: 9px; }
+.card p { color: var(--muted); font-size: 14px; }
+
+/* pipeline strip */
+.pipeline-strip {
+  display: flex; align-items: stretch; gap: 0; margin-top: 10px;
+  overflow-x: auto; padding-bottom: 8px;
+}
+.pstep { flex: 1; min-width: 170px; position: relative; padding: 20px 22px 20px 26px; }
+.pstep:not(:last-child)::after {
+  content: '→'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+  color: var(--accent); font-size: 20px; z-index: 2;
+}
+.pstep .n {
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  display: block; margin-bottom: 6px;
+}
+.pstep b { display: block; margin-bottom: 5px; font-size: 15px; }
+.pstep span { color: var(--muted); font-size: 13px; }
+
+/* audience split */
+.split-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+.split-client .split-label { color: var(--accent-2); }
+.split-eng .split-label { color: var(--violet); }
+.card ul { list-style: none; margin-top: 6px; }
+.card li { padding: 7px 0 7px 26px; position: relative; color: #c3c9e0; font-size: 14.5px; }
+.card li::before { content: '◆'; position: absolute; left: 2px; font-size: 10px; top: 11px; }
+.split-client li::before { color: var(--accent-2); }
+.split-eng li::before { color: var(--violet); }
+
+/* docs */
+.docs-block { margin-bottom: 34px; }
+.docs-block h3 { font-size: 19px; margin-bottom: 10px; color: var(--accent); }
+.docs-block p, .docs-block li { color: #c3c9e0; font-size: 15px; margin-bottom: 8px; }
+.docs-block ol, .docs-block ul { margin-left: 22px; }
+kbd {
+  font-family: var(--mono); font-size: 12.5px; background: var(--bg-3);
+  border: 1px solid var(--border-strong); border-radius: 6px; padding: 2px 8px;
+}
+.callout {
+  border-left: 3px solid var(--accent); background: rgba(94,234,212,.06);
+  border-radius: 0 10px 10px 0; padding: 14px 18px; margin: 14px 0; font-size: 14.5px; color: #c3c9e0;
+}
+
+/* faq */
+details {
+  background: var(--bg-3); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 22px; margin-bottom: 12px;
+}
+summary { cursor: pointer; font-weight: 600; font-size: 15.5px; }
+details p { color: var(--muted); margin-top: 12px; font-size: 14.5px; }
+
+/* download */
+.dl-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.dl-card {
+  flex: 1; min-width: 240px; text-align: center; padding: 30px 24px;
+  background: var(--bg-3); border: 1px solid var(--border-strong); border-radius: 16px;
+}
+.dl-card .os { font-size: 34px; display: block; margin-bottom: 10px; }
+.dl-card small { display: block; color: var(--muted); margin-top: 10px; font-size: 12.5px; }
+
+footer {
+  border-top: 1px solid var(--border); padding: 36px 0; text-align: center;
+  color: var(--muted); font-size: 13.5px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="nav-brand" href="https://16xbrains.com">16x<span>Brains</span></a>
+    <span class="nav-tag">Tools</span>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#docs">Docs</a>
+      <a href="#faq">FAQ</a>
+      <a href="#download">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <canvas id="galaxy-canvas"></canvas>
+  <div class="wrap">
+    <span class="hero-kicker">Free desktop tool · macOS &amp; Windows</span>
+    <h1>Your AI isn't guessing.<br /><span class="grad">Watch it read your data.</span></h1>
+    <p class="hero-sub">
+      RAG Explorer turns Retrieval-Augmented Generation into something you can see:
+      your documents become a 3D galaxy of meaning, your question flies into it,
+      and beams of light connect it to the exact passages that ground the answer.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="#download">↓ Download RAG Explorer</a>
+      <a class="btn" href="#how">See how it works</a>
+    </div>
+    <p class="hero-note">100% local embeddings — your documents never leave your machine.</p>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-kicker">Why it exists</div>
+    <h2>RAG is the most requested enterprise AI feature.<br />It's also the least understood.</h2>
+    <p class="sec-sub">
+      Clients ask "how do we know it's not making things up?" Engineers ask "why did it retrieve
+      <em>that</em> chunk?" RAG Explorer answers both — visually.
+    </p>
+    <div class="grid grid-3">
+      <div class="card">
+        <span class="icon">✦</span>
+        <h3>The Embedding Galaxy</h3>
+        <p>Every chunk of every document becomes a star, positioned by meaning. Similar content clusters into constellations. After a query, the galaxy re-lights as a similarity heatmap — white-hot stars are the retrieved context.</p>
+      </div>
+      <div class="card">
+        <span class="icon">⇶</span>
+        <h3>X-ray Pipeline View</h3>
+        <p>The same run, stage by stage: query expansion, embedding (with the actual 384-dim vector rendered), cosine search with live scores, and grounded generation with inline [1][2] citations. Timings on every stage.</p>
+      </div>
+      <div class="card">
+        <span class="icon">◈</span>
+        <h3>AI woven in, not bolted on</h3>
+        <p>Via OpenRouter — bring any model. An auditor judges every retrieved chunk. A chunking advisor reads your corpus and tunes it. HyDE expansion improves recall. Suggested queries onboard you instantly.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🔒</span>
+        <h3>Private by architecture</h3>
+        <p>Parsing, chunking, and embedding run locally with a sentence-transformer on your machine. Only when you use LLM features do the query and retrieved chunks — never whole documents — go to OpenRouter.</p>
+      </div>
+      <div class="card">
+        <span class="icon">⚙</span>
+        <h3>A real debugging instrument</h3>
+        <p>Change chunk strategy, size, overlap, top-K, or score threshold and re-index in seconds. Same query, new galaxy, new scores — retrieval regressions become visually obvious.</p>
+      </div>
+      <div class="card">
+        <span class="icon">📄</span>
+        <h3>Bring real documents</h3>
+        <p>PDF, Markdown, TXT, HTML, CSV. Or click once to load a realistic sample corpus and demo the whole pipeline in under a minute.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="how">
+  <div class="wrap">
+    <div class="sec-kicker">How it works</div>
+    <h2>The RAG pipeline, made visible</h2>
+    <p class="sec-sub">Every query you run animates through five stages — nothing is a black box.</p>
+    <div class="pipeline-strip">
+      <div class="pstep"><span class="n">00 · optional</span><b>AI expands the query</b><span>HyDE: an LLM drafts a hypothetical answer passage — it embeds closer to real document text than a raw question does.</span></div>
+      <div class="pstep"><span class="n">01</span><b>Embed locally</b><span>all-MiniLM-L6-v2 turns the text into a 384-dimensional vector, on your machine.</span></div>
+      <div class="pstep"><span class="n">02</span><b>Search the galaxy</b><span>Cosine similarity against every chunk. Watch beams lock onto the top-K stars.</span></div>
+      <div class="pstep"><span class="n">03</span><b>Audit (AI)</b><span>One click: an LLM judges each retrieved chunk — relevant or off-target — and suggests a fix.</span></div>
+      <div class="pstep"><span class="n">04</span><b>Grounded answer</b><span>The model answers only from retrieved context, streaming live with [1][2] citations.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-kicker">Two audiences, one tool</div>
+    <h2>Showcase for clients. X-ray for engineers.</h2>
+    <div class="grid grid-2" style="margin-top: 34px;">
+      <div class="card split-client">
+        <div class="split-label">In the boardroom</div>
+        <ul>
+          <li>Prove the AI references <b>their actual documents</b> — hallucination concerns dissolve when you can point at the exact source passage.</li>
+          <li>The galaxy makes "embeddings" and "vector search" intuitive in thirty seconds, no math required.</li>
+          <li>Runs offline on a laptop with the bundled sample corpus — perfect for demos behind client firewalls.</li>
+        </ul>
+      </div>
+      <div class="card split-eng">
+        <div class="split-label">In the trenches</div>
+        <ul>
+          <li>See <em>why</em> retrieval missed: wrong constellation means bad chunking; near-misses mean threshold or top-K tuning.</li>
+          <li>A/B chunking strategies in seconds — fixed, sentence-aware, paragraph — with instant re-index and score comparison.</li>
+          <li>The AI auditor turns "the answer feels off" into a concrete verdict per chunk plus one actionable tuning suggestion.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="docs">
+  <div class="wrap">
+    <div class="sec-kicker">Documentation</div>
+    <h2>Using RAG Explorer</h2>
+    <p class="sec-sub">The full guide also ships inside the app — click the <kbd>?</kbd> in the top bar.</p>
+
+    <div class="docs-block">
+      <h3>Quick start (60 seconds)</h3>
+      <ol>
+        <li>Open the app and click <kbd>✦ Load sample corpus</kbd> — five realistic company documents are chunked and embedded locally. First run downloads the ~25&nbsp;MB embedding model once.</li>
+        <li>Ask something like <em>"How many vacation days do employees get?"</em> and press <kbd>Enter</kbd>.</li>
+        <li>Watch the galaxy: the white pulsing point is your question; beams connect it to retrieved chunks; the heatmap shows similarity everywhere else.</li>
+        <li>Switch to <kbd>⇶ Pipeline</kbd> for the stage-by-stage breakdown with timings and scores.</li>
+        <li>Add an OpenRouter key in <kbd>⚙ Settings</kbd> to unlock grounded answers, the retrieval auditor, the chunking advisor, HyDE, and query suggestions.</li>
+      </ol>
+    </div>
+
+    <div class="docs-block">
+      <h3>Reading the galaxy</h3>
+      <p>Each star is one chunk, placed by a PCA projection of its embedding — proximity means semantic similarity, so documents form colored constellations. After a query: deep blue = irrelevant, orange = warm, white-hot = selected into context. Hover any star to preview it; click to open the full chunk with its exact similarity score.</p>
+      <div class="callout"><b>Debugging heuristic:</b> beams reaching into the wrong constellation → fix chunking or enable HyDE. Right chunks glowing warm but not retrieved → raise top-K or lower the score threshold.</div>
+    </div>
+
+    <div class="docs-block">
+      <h3>Your own documents</h3>
+      <p>Click <kbd>+ Add documents</kbd> and select PDF, MD, TXT, HTML, or CSV files. Everything is parsed and embedded on-device. Remove any document or clear the corpus at any time; corpus and settings persist between sessions.</p>
+    </div>
+
+    <div class="docs-block">
+      <h3>AI features (OpenRouter)</h3>
+      <p>Get a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a> and paste it into Settings — it's stored locally and sent only to openrouter.ai. Pick any model: Claude, GPT, Gemini, Llama, DeepSeek, or paste a custom model ID.</p>
+      <ul>
+        <li><b>Grounded answers</b> — streamed, citing chunks inline as [1], [2]. If context is insufficient, the model says so instead of inventing.</li>
+        <li><b>Retrieval auditor</b> — verdict per chunk, a coverage rating, what's missing, and one concrete tuning suggestion.</li>
+        <li><b>Chunking advisor</b> — reads corpus samples and recommends strategy, size, and overlap with reasoning; one click applies and re-indexes.</li>
+        <li><b>HyDE expansion</b> — toggle in Settings; often noticeably better recall for question-phrased queries.</li>
+        <li><b>Query suggestions</b> — questions your corpus can actually answer, shown above the query bar.</li>
+      </ul>
+    </div>
+
+    <div class="docs-block">
+      <h3>Tuning guide</h3>
+      <p>Chunking is the #1 lever. Too small: chunks lack context. Too large: topics blur into one vector and scores flatten. Start with sentence-aware at 512 chars / 64 overlap. Healthy retrieval shows a clear score drop-off between relevant and irrelevant chunks — if everything clusters around 0.3–0.5, your chunks are probably too long.</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-kicker">FAQ</div>
+    <h2>Questions we expect</h2>
+    <div style="margin-top: 30px;">
+      <details>
+        <summary>Is my data sent anywhere?</summary>
+        <p>Documents are parsed, chunked, and embedded entirely on your machine using a local sentence-transformer. Only when you invoke LLM features (answers, audit, advisor, HyDE, suggestions) are the query and the retrieved chunk texts sent to OpenRouter. No API key configured → no network calls at all beyond the one-time model download.</p>
+      </details>
+      <details>
+        <summary>Do I need an OpenRouter account?</summary>
+        <p>No — retrieval visualization works fully without one. The key unlocks generation and the AI assistants. OpenRouter gives you one key for Claude, GPT, Gemini, Llama, DeepSeek and hundreds of other models, with pay-as-you-go pricing.</p>
+      </details>
+      <details>
+        <summary>Is this production RAG infrastructure?</summary>
+        <p>It's a visualizer, demo instrument, and debugging tool — not a vector database. The pipeline it visualizes (chunk → embed → cosine search → grounded generation) is the same architecture we deploy in production engagements, which is exactly what makes it an honest demo.</p>
+      </details>
+      <details>
+        <summary>What's the 3D layout actually showing?</summary>
+        <p>A PCA projection of 384-dimensional embeddings down to 3. Distances are approximate by necessity — but cluster structure and query proximity are faithful enough to reason about retrieval visually. Scores shown are the true cosine similarities, computed in full dimensionality.</p>
+      </details>
+      <details>
+        <summary>Can 16xBrains build this into our product?</summary>
+        <p>That's rather the point. We design and ship enterprise RAG systems — secure ingestion, evaluation harnesses, retrieval tuning, and the LLM layer. <a href="https://16xbrains.com">Talk to us.</a></p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="download">
+  <div class="wrap">
+    <div class="sec-kicker">Download</div>
+    <h2>Free. No signup. Two platforms.</h2>
+    <p class="sec-sub">Version 1.0.0 · MIT licensed</p>
+    <div class="dl-row">
+      <div class="dl-card">
+        <span class="os"></span>
+        <a class="btn btn-primary" href="/downloads/RAG-Explorer-1.0.0-arm64.dmg">Download for macOS</a>
+        <small>Apple Silicon &amp; Intel · .dmg · macOS 11+</small>
+      </div>
+      <div class="dl-card">
+        <span class="os">⊞</span>
+        <a class="btn btn-primary" href="/downloads/RAG-Explorer-Setup-1.0.0.exe">Download for Windows</a>
+        <small>x64 installer · .exe · Windows 10+</small>
+      </div>
+    </div>
+    <p class="hero-note" style="margin-top: 22px;">
+      Engineers can also build from source — the repo includes one-command dev and packaging scripts.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    RAG Explorer is a free tool by <a href="https://16xbrains.com"><b>16xBrains</b></a> — elite technical interventions &amp; engineering governance, proven with numbers, since 2016.
+  </div>
+</footer>
+
+<script>
+// Lightweight hero galaxy — self-contained, no dependencies.
+(function () {
+  const canvas = document.getElementById('galaxy-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr;
+  const COLORS = ['#5eead4', '#a78bfa', '#f472b6', '#fbbf24', '#60a5fa'];
+  let stars = [], beams = [], query = null, t = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // build clustered starfield
+  const CLUSTERS = 5;
+  for (let c = 0; c < CLUSTERS; c++) {
+    const cx = (0.15 + 0.7 * (c / (CLUSTERS - 1))) + (Math.random() - 0.5) * 0.06;
+    const cy = 0.3 + Math.random() * 0.45;
+    for (let i = 0; i < 26; i++) {
+      const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.6) * 0.09;
+      stars.push({
+        fx: cx + Math.cos(a) * r, fy: cy + Math.sin(a) * r * 0.8,
+        color: COLORS[c], size: 1 + Math.random() * 1.8,
+        tw: Math.random() * Math.PI * 2, hot: 0
+      });
+    }
+  }
+
+  function fireQuery() {
+    const c = Math.floor(Math.random() * CLUSTERS);
+    const targets = stars.filter(s => s.color === COLORS[c]).sort(() => Math.random() - 0.5).slice(0, 4);
+    query = { fx: 0.5, fy: 0.12, tx: targets[0].fx, ty: targets[0].fy, p: 0 };
+    beams = targets.map(s => ({ star: s, on: 0 }));
+    stars.forEach(s => (s.hot = 0));
+  }
+  fireQuery();
+  setInterval(fireQuery, 5200);
+
+  function draw() {
+    t += 0.016;
+    ctx.clearRect(0, 0, w, h);
+
+    // beams
+    if (query && query.p >= 1) {
+      for (const b of beams) {
+        b.on = Math.min(1, b.on + 0.04);
+        b.star.hot = b.on;
+        ctx.strokeStyle = 'rgba(125,211,252,' + (0.35 * b.on * (0.7 + 0.3 * Math.sin(t * 5))) + ')';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(query.x, query.y);
+        ctx.lineTo(b.star.fx * w, b.star.fy * h);
+        ctx.stroke();
+      }
+    }
+
+    // stars
+    for (const s of stars) {
+      const twinkle = 0.55 + 0.45 * Math.sin(t * 1.6 + s.tw);
+      const x = s.fx * w, y = s.fy * h;
+      ctx.globalAlpha = (0.35 + 0.65 * twinkle) * (0.6 + 0.4 * s.hot);
+      ctx.fillStyle = s.hot > 0.5 ? '#ffffff' : s.color;
+      ctx.beginPath();
+      ctx.arc(x, y, s.size * (1 + s.hot * 1.3), 0, Math.PI * 2);
+      ctx.fill();
+      if (s.hot > 0.3) {
+        ctx.globalAlpha = 0.12 * s.hot;
+        ctx.beginPath();
+        ctx.arc(x, y, s.size * 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // query point flying in
+    if (query) {
+      query.p = Math.min(1, query.p + 0.02);
+      const e = 1 - Math.pow(1 - query.p, 3);
+      query.x = (query.fx + (query.tx - query.fx) * e) * w;
+      query.y = (query.fy + (query.ty - query.fy) * e) * h - (query.p < 1 ? Math.sin(e * Math.PI) * 30 : 0);
+      const pulse = 1 + Math.sin(t * 4) * 0.25;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(query.x, query.y, 3.2 * pulse, 0, Math.PI * 2); ctx.fill();
+      const g = ctx.createRadialGradient(query.x, query.y, 0, query.x, query.y, 22);
+      g.addColorStop(0, 'rgba(125,211,252,.5)'); g.addColorStop(1, 'rgba(125,211,252,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(query.x, query.y, 22, 0, Math.PI * 2); ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>

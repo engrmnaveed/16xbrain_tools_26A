@@ -1,0 +1,69 @@
+# Builds and publishes ForgeDB installers for macOS (Intel + Apple Silicon)
+# and Windows (x64) whenever a version tag is pushed:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Artifacts land in a draft GitHub Release: .dmg / .app (macOS),
+# .msi / NSIS .exe (Windows). Publish the draft to distribute.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest # Apple Silicon
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest # Intel
+            args: '--target x86_64-apple-darwin'
+          - platform: windows-latest # x64
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Both mac targets so either matrix leg can cross-compile.
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and upload to draft release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional macOS code signing — add these repo secrets to enable:
+          # APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY,
+          # APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'ForgeDB ${{ github.ref_name }}'
+          releaseBody: 'See CHANGELOG for details. macOS: .dmg — Windows: .msi or setup .exe'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

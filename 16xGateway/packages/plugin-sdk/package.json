@@ -1,0 +1,25 @@
+{
+  "name": "@16xbrains/plugin-sdk",
+  "version": "1.0.0",
+  "description": "Authoring SDK + local harness (16xgateway check|run) for 16xGateway plugins.",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/src/index.d.ts", "import": "./dist/src/index.js" }
+  },
+  "bin": {
+    "16xgateway": "./dist/src/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test dist/tests/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "20.14.15",
+    "typescript": "5.5.4"
+  }
+}

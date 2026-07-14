@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://openrouter.ai;" />
+<title>16x SelfHeal — Self-Healing System Visualizer</title>
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ Top bar ═══ -->
+  <header id="topbar">
+    <div class="brand"><span class="brand-mark">16x</span> SelfHeal <span class="brand-sub">Self-Healing System Visualizer</span></div>
+    <select id="preset-select" title="Topology preset"></select>
+    <button id="btn-pause" class="btn icon" title="Pause / resume (Space)">⏸</button>
+    <select id="speed-select" title="Simulation speed">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+      <option value="4">4×</option>
+    </select>
+    <label class="rps-wrap" title="Base traffic (requests/sec)">
+      <span>traffic</span>
+      <input id="rps-slider" type="range" min="2" max="60" value="14" />
+      <span id="rps-val" class="mono">14 rps</span>
+    </label>
+    <div class="flex-spacer"></div>
+    <span id="ai-status" class="ai-status" title="AI status">AI: off</span>
+    <button id="btn-docs" class="btn ghost">📖 Docs</button>
+    <button id="btn-settings" class="btn ghost">⚙ Settings</button>
+  </header>
+
+  <div id="main">
+    <!-- ═══ Chaos sidebar ═══ -->
+    <aside id="sidebar">
+      <h3>⚡ Chaos Controls</h3>
+      <button id="chaos-random" class="btn chaos-big">💥 INJECT CHAOS<span class="sub">kill a random instance</span></button>
+
+      <label class="field"><span>Target group</span>
+        <select id="chaos-target"></select>
+      </label>
+      <div class="btn-grid">
+        <button id="chaos-kill-primary" class="btn danger">🗄 Kill DB primary</button>
+        <button id="chaos-partition" class="btn danger">✂️ Partition</button>
+        <button id="chaos-latency" class="btn warn">🐌 +500ms latency</button>
+        <button id="chaos-cpu" class="btn warn">🔥 CPU spike</button>
+        <button id="chaos-traffic" class="btn warn">📈 Traffic ×3</button>
+        <button id="chaos-monkey" class="btn warn">🐒 Chaos Monkey</button>
+      </div>
+
+      <h3>🎬 Scenarios</h3>
+      <div class="btn-col">
+        <button class="btn scenario" data-scenario="black-friday">🛍 Black Friday surge</button>
+        <button class="btn scenario" data-scenario="dc-flake">🌩 Flaky datacenter</button>
+        <button class="btn scenario" data-scenario="cascade">⛓ Cascading failure</button>
+      </div>
+      <div class="ai-scenario-row">
+        <input id="ai-scenario-input" type="text" placeholder="Describe a scenario… (AI)" />
+        <button id="ai-scenario-btn" class="btn accent" title="Generate with AI">✨</button>
+      </div>
+
+      <h3>🛠 Topology</h3>
+      <label class="field"><span>Scale group</span>
+        <div class="row">
+          <select id="scale-target"></select>
+          <button id="scale-down" class="btn icon">−</button>
+          <span id="scale-count" class="mono">–</span>
+          <button id="scale-up" class="btn icon">+</button>
+        </div>
+      </label>
+      <details id="add-service">
+        <summary>＋ Add service group</summary>
+        <label class="field"><span>Name</span><input id="new-name" type="text" placeholder="search-svc" /></label>
+        <label class="field"><span>Replicas</span><input id="new-replicas" type="number" min="1" max="6" value="2" /></label>
+        <label class="field"><span>Receives traffic from</span><select id="new-from"></select></label>
+        <label class="field"><span>Depends on (optional)</span><select id="new-dep"><option value="">none</option></select></label>
+        <button id="new-create" class="btn accent full">Create service</button>
+      </details>
+      <button id="btn-reset" class="btn ghost full">↺ Reset topology</button>
+    </aside>
+
+    <!-- ═══ Canvas ═══ -->
+    <section id="stage">
+      <canvas id="canvas"></canvas>
+      <div id="incident-banner" class="hidden">🚨 INCIDENT IN PROGRESS — <span id="incident-cause"></span> · <span id="incident-timer"></span></div>
+      <div id="legend">
+        <span><i class="dot healthy"></i>healthy</span>
+        <span><i class="dot degraded"></i>degraded</span>
+        <span><i class="dot starting"></i>booting</span>
+        <span><i class="dot dead"></i>dead</span>
+        <span class="hint">scroll = zoom · drag = pan · dbl-click = fit · click node = kill</span>
+      </div>
+    </section>
+
+    <!-- ═══ Right panel ═══ -->
+    <aside id="rightpanel">
+      <nav id="tabs">
+        <button class="tab active" data-tab="metrics">Metrics</button>
+        <button class="tab" data-tab="events">Events</button>
+        <button class="tab" data-tab="ai">AI Copilot <span id="ai-dot" class="dot-off"></span></button>
+      </nav>
+
+      <div id="tab-metrics" class="tab-page active">
+        <div class="stat-grid">
+          <div class="stat"><span id="m-success" class="stat-num">100%</span><span class="stat-label">success (30s)</span></div>
+          <div class="stat"><span id="m-rps" class="stat-num">0</span><span class="stat-label">req/s</span></div>
+          <div class="stat"><span id="m-latency" class="stat-num">0ms</span><span class="stat-label">avg latency</span></div>
+          <div class="stat"><span id="m-instances" class="stat-num">0/0</span><span class="stat-label">healthy pods</span></div>
+          <div class="stat"><span id="m-mttr" class="stat-num">–</span><span class="stat-label">last MTTR</span></div>
+          <div class="stat"><span id="m-fallback" class="stat-num">0</span><span class="stat-label">fallbacks served</span></div>
+        </div>
+        <h4>Throughput <span class="chart-legend"><i style="background:#2dd4a7"></i>ok <i style="background:#ff4d5e"></i>errors</span></h4>
+        <canvas id="chart-throughput" height="70"></canvas>
+        <h4>Latency (avg ms)</h4>
+        <canvas id="chart-latency" height="70"></canvas>
+        <h4>Incident history</h4>
+        <div id="incident-list" class="incident-list"><div class="muted">No incidents yet. Push the big red button. 😈</div></div>
+      </div>
+
+      <div id="tab-events" class="tab-page">
+        <div class="event-filter">
+          <label><input type="checkbox" data-f="chaos" checked />chaos</label>
+          <label><input type="checkbox" data-f="detect" checked />detect</label>
+          <label><input type="checkbox" data-f="orchestrator" checked />heal</label>
+          <label><input type="checkbox" data-f="breaker" checked />breaker</label>
+          <label><input type="checkbox" data-f="failover" checked />failover</label>
+        </div>
+        <div id="event-log"></div>
+      </div>
+
+      <div id="tab-ai" class="tab-page">
+        <div id="ai-setup" class="ai-setup hidden">
+          <p>🤖 Connect an <b>OpenRouter</b> key to unlock the AI copilot: incident post-mortems, architecture reviews, natural-language chaos scenarios and live explanations.</p>
+          <button id="ai-open-settings" class="btn accent full">Add API key</button>
+          <p class="muted small">Get a key at openrouter.ai — works with Claude, GPT, Gemini, Llama and 300+ models.</p>
+        </div>
+        <div class="ai-quick">
+          <button class="btn ai-q" data-ai="review" title="Score this architecture's resilience and suggest fixes">🏗 Review architecture</button>
+          <button class="btn ai-q" data-ai="postmortem" title="Generate a post-mortem for the last incident">📋 Post-mortem</button>
+          <button class="btn ai-q" data-ai="explain" title="Plain-words narration for client demos">🎙 Explain what happened</button>
+        </div>
+        <div id="ai-chat"></div>
+        <div id="ai-input-row">
+          <textarea id="ai-input" rows="2" placeholder="Ask the SRE copilot… e.g. “simulate a region outage during peak traffic”"></textarea>
+          <button id="ai-send" class="btn accent">➤</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ═══ Status bar ═══ -->
+  <footer id="statusbar">
+    <span id="s-time" class="mono">t+0s</span>
+    <span id="s-active" class="mono">0 in flight</span>
+    <span id="s-monkey" class="hidden">🐒 chaos monkey active</span>
+    <div class="flex-spacer"></div>
+    <span class="muted">16xbrains.com · press <b>?</b> for shortcuts</span>
+  </footer>
+</div>
+
+<!-- ═══ Settings modal ═══ -->
+<dialog id="settings-modal">
+  <h2>⚙ Settings</h2>
+  <label class="field"><span>OpenRouter API key</span>
+    <input id="set-key" type="password" placeholder="sk-or-v1-…" />
+  </label>
+  <label class="field"><span>Model</span>
+    <div class="row">
+      <select id="set-model"><option value="openrouter/auto">openrouter/auto (recommended)</option></select>
+      <button id="set-refresh-models" class="btn ghost" title="Fetch model list">↻</button>
+    </div>
+  </label>
+  <p class="muted small">The key is stored locally on this machine (encrypted with your OS keychain when available) and only sent to openrouter.ai.</p>
+  <div class="row right">
+    <button id="set-test" class="btn ghost">Test connection</button>
+    <button id="set-save" class="btn accent">Save</button>
+    <button id="set-close" class="btn ghost">Close</button>
+  </div>
+  <p id="set-status" class="muted small"></p>
+</dialog>
+
+<!-- ═══ Docs modal ═══ -->
+<dialog id="docs-modal">
+  <div class="docs-body">
+    <h2>📖 16x SelfHeal — User Guide</h2>
+
+    <h3>What is this?</h3>
+    <p>A live sandbox that makes <b>high availability</b> concrete. It simulates a microservice
+    system — load balancer, services, caches, databases, queues — and lets you break it on purpose.
+    Watch traffic route around failures, circuit breakers trip, replicas get promoted, and the
+    orchestrator spin up replacements. What you're seeing is exactly what Kubernetes, health checks
+    and retry logic do for production systems.</p>
+
+    <h3>The map</h3>
+    <p>Each hexagon is a running instance. Particles are live requests flowing from the internet
+    through the system. Colors: <b style="color:#2dd4a7">green</b> healthy ·
+    <b style="color:#f5b342">amber</b> degraded/overloaded · <b style="color:#4da3ff">blue</b> booting ·
+    <b style="color:#ff4d5e">red</b> dead. The bar under each node is its load.
+    Hover a node for live details; <b>click a node to kill it</b>. Scroll to zoom, drag to pan,
+    double-click to re-fit.</p>
+
+    <h3>Chaos controls</h3>
+    <p><b>💥 Inject chaos</b> kills a random instance. Targeted actions use the group selector:
+    <b>partition</b> makes a group unreachable, <b>latency</b> and <b>CPU spike</b> degrade it,
+    <b>traffic ×3</b> simulates a surge, and <b>🐒 Chaos Monkey</b> keeps breaking random things
+    until you cage it. Scenario buttons run scripted multi-step incidents.</p>
+
+    <h3>What self-healing looks like</h3>
+    <p>After a crash, watch the sequence: <b>(1)</b> requests to the dead node fail and retry against
+    healthy replicas — this brief error window is the detection gap; <b>(2)</b> health checks fail
+    twice and the load balancer ejects the node from its pool; <b>(3)</b> the orchestrator schedules
+    a replacement, which boots (blue) and rejoins; <b>(4)</b> the incident banner clears and MTTR is
+    recorded. Kill a database <i>primary</i> to watch a replica get promoted via leader election.
+    Partition a cache or DB and watch services serve <i>degraded fallbacks</i> instead of failing.</p>
+
+    <h3>AI Copilot (OpenRouter)</h3>
+    <p>Add an OpenRouter API key in Settings to unlock deep AI assistance — not just chat:
+    the copilot sees the live topology, metrics and event log. It can <b>score your architecture</b>
+    and apply fixes, write <b>post-mortems from the real event timeline</b>, turn plain English into
+    <b>executable chaos scenarios</b> ("simulate Black Friday with a payment DB failure"), and
+    <b>narrate incidents in client-friendly words</b>. When the AI proposes actions you'll get a
+    ▶ Run button — nothing executes without your click.</p>
+
+    <h3>Topology editing</h3>
+    <p>Scale any group up or down with the +/− controls (watch the orchestrator do the work).
+    Add new service groups with their own dependencies. Presets: Simple Web App, E-commerce
+    Microservices, Event-Driven Pipeline.</p>
+
+    <h3>Metrics</h3>
+    <p>Success rate, throughput, average latency and healthy-pod counts update per second.
+    <b>MTTR</b> (mean time to recovery) is measured from the first failure to full recovery —
+    use it to compare architectures: does 2 replicas vs 4 change your recovery story?</p>
+
+    <h3>Keyboard shortcuts</h3>
+    <p class="mono">Space pause · K kill random · M chaos monkey · 1/2/3 presets · F fit view · ? this help</p>
+
+    <h3>For internal use</h3>
+    <p>Use it to sanity-check replica counts, visualize retry/fallback strategy, and rehearse
+    incident narratives before touching production. It's a mental model gym — the same failure
+    patterns apply to your real Kubernetes configs.</p>
+  </div>
+  <div class="row right"><button id="docs-close" class="btn accent">Got it</button></div>
+</dialog>
+
+<div id="toasts"></div>
+
+<script type="module" src="js/ui/app.js"></script>
+</body>
+</html>

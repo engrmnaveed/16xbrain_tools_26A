@@ -1,0 +1,486 @@
+{
+  "meta": {
+    "app": "SchemaMind",
+    "formatVersion": 1,
+    "name": "E-commerce Example",
+    "createdAt": "2026-07-11T13:30:23.376Z",
+    "updatedAt": "2026-07-11T13:30:23.376Z"
+  },
+  "tables": [
+    {
+      "id": "t_mrgejndb_0z0ba",
+      "name": "users",
+      "x": 80,
+      "y": 60,
+      "color": null,
+      "note": "Registered accounts",
+      "fields": [
+        {
+          "id": "f_mrgejndb_2lrec",
+          "name": "id",
+          "type": "uuid",
+          "pk": true,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_3pa76",
+          "name": "email",
+          "type": "string",
+          "pk": false,
+          "unique": true,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_4pe3v",
+          "name": "full_name",
+          "type": "string",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_5i6gd",
+          "name": "role",
+          "type": "enum",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "buyer",
+          "enumValues": [
+            "admin",
+            "seller",
+            "buyer"
+          ],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_6raao",
+          "name": "created_at",
+          "type": "datetime",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": true,
+          "default": "now",
+          "enumValues": [],
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "t_mrgejndb_74ejy",
+      "name": "products",
+      "x": 380,
+      "y": 60,
+      "color": null,
+      "note": "",
+      "fields": [
+        {
+          "id": "f_mrgejndb_9l9fp",
+          "name": "id",
+          "type": "uuid",
+          "pk": true,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_al1xy",
+          "name": "title",
+          "type": "string",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_bpv3c",
+          "name": "description",
+          "type": "text",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_c1oss",
+          "name": "price",
+          "type": "decimal",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_dr01f",
+          "name": "stock",
+          "type": "int",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "0",
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_ebqfz",
+          "name": "status",
+          "type": "enum",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "draft",
+          "enumValues": [
+            "draft",
+            "active",
+            "archived"
+          ],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_f4zfe",
+          "name": "created_at",
+          "type": "datetime",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "now",
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_13tetn",
+          "name": "seller_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "t_mrgejndb_gjs7d",
+      "name": "orders",
+      "x": 680,
+      "y": 60,
+      "color": null,
+      "note": "",
+      "fields": [
+        {
+          "id": "f_mrgejndb_i9ohl",
+          "name": "id",
+          "type": "uuid",
+          "pk": true,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_jvc6l",
+          "name": "status",
+          "type": "enum",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "pending",
+          "enumValues": [
+            "pending",
+            "paid",
+            "shipped",
+            "delivered",
+            "cancelled"
+          ],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_kvhbv",
+          "name": "total",
+          "type": "decimal",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_l7lmg",
+          "name": "placed_at",
+          "type": "datetime",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": true,
+          "default": "now",
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_14lh3u",
+          "name": "buyer_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "t_mrgejndb_m4l7n",
+      "name": "order_items",
+      "x": 80,
+      "y": 320,
+      "color": null,
+      "note": "",
+      "fields": [
+        {
+          "id": "f_mrgejndb_oo58k",
+          "name": "id",
+          "type": "uuid",
+          "pk": true,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_p7cpr",
+          "name": "quantity",
+          "type": "int",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_qepi4",
+          "name": "unit_price",
+          "type": "decimal",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_15iz6c",
+          "name": "order_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_16sttz",
+          "name": "product_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "t_mrgejndb_rk8ur",
+      "name": "reviews",
+      "x": 380,
+      "y": 320,
+      "color": null,
+      "note": "",
+      "fields": [
+        {
+          "id": "f_mrgejndb_th3rj",
+          "name": "id",
+          "type": "uuid",
+          "pk": true,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_u16f1",
+          "name": "rating",
+          "type": "int",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_vlvin",
+          "name": "comment",
+          "type": "text",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndb_w4mbx",
+          "name": "created_at",
+          "type": "datetime",
+          "pk": false,
+          "unique": false,
+          "nullable": true,
+          "indexed": false,
+          "default": "now",
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_17cki4",
+          "name": "product_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        },
+        {
+          "id": "f_mrgejndc_18iq1b",
+          "name": "author_id",
+          "type": "uuid",
+          "pk": false,
+          "unique": false,
+          "nullable": false,
+          "indexed": true,
+          "default": null,
+          "enumValues": [],
+          "note": ""
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "r_mrgejndc_xgvz3",
+      "fromTable": "t_mrgejndb_74ejy",
+      "fromField": "f_mrgejndc_13tetn",
+      "toTable": "t_mrgejndb_0z0ba",
+      "toField": "f_mrgejndb_2lrec",
+      "kind": "one-many",
+      "onDelete": "cascade",
+      "note": ""
+    },
+    {
+      "id": "r_mrgejndc_yylpw",
+      "fromTable": "t_mrgejndb_gjs7d",
+      "fromField": "f_mrgejndc_14lh3u",
+      "toTable": "t_mrgejndb_0z0ba",
+      "toField": "f_mrgejndb_2lrec",
+      "kind": "one-many",
+      "onDelete": "cascade",
+      "note": ""
+    },
+    {
+      "id": "r_mrgejndc_ze9it",
+      "fromTable": "t_mrgejndb_m4l7n",
+      "fromField": "f_mrgejndc_15iz6c",
+      "toTable": "t_mrgejndb_gjs7d",
+      "toField": "f_mrgejndb_i9ohl",
+      "kind": "one-many",
+      "onDelete": "cascade",
+      "note": ""
+    },
+    {
+      "id": "r_mrgejndc_101nm8",
+      "fromTable": "t_mrgejndb_m4l7n",
+      "fromField": "f_mrgejndc_16sttz",
+      "toTable": "t_mrgejndb_74ejy",
+      "toField": "f_mrgejndb_9l9fp",
+      "kind": "one-many",
+      "onDelete": "restrict",
+      "note": ""
+    },
+    {
+      "id": "r_mrgejndc_111orj",
+      "fromTable": "t_mrgejndb_rk8ur",
+      "fromField": "f_mrgejndc_17cki4",
+      "toTable": "t_mrgejndb_74ejy",
+      "toField": "f_mrgejndb_9l9fp",
+      "kind": "one-many",
+      "onDelete": "cascade",
+      "note": ""
+    },
+    {
+      "id": "r_mrgejndc_127lm0",
+      "fromTable": "t_mrgejndb_rk8ur",
+      "fromField": "f_mrgejndc_18iq1b",
+      "toTable": "t_mrgejndb_0z0ba",
+      "toField": "f_mrgejndb_2lrec",
+      "kind": "one-many",
+      "onDelete": "cascade",
+      "note": ""
+    }
+  ],
+  "notes": ""
+}

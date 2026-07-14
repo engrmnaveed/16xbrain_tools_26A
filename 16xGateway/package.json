@@ -1,0 +1,42 @@
+{
+  "name": "@16xbrains/gateway-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "16xGateway — self-hosted security sidecar that masks PII before untrusted plugin code sees it and restores real values afterward.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./dist/src/server.js",
+    "./policy": "./dist/src/policy/index.js",
+    "./sandbox": "./dist/src/sandbox/index.js",
+    "./sanitizer": "./dist/src/sanitizer/index.js",
+    "./registry": "./dist/src/registry/index.js",
+    "./types": "./dist/src/types/index.js"
+  },
+  "workspaces": [
+    "packages/gateway-client",
+    "packages/plugin-sdk"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run build --workspace @16xbrains/gateway-client && npm run build --workspace @16xbrains/plugin-sdk",
+    "build:core": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist packages/*/dist",
+    "test": "node --test dist/tests/*.test.js",
+    "test:core": "node --test dist/tests/sanitizer.test.js dist/tests/policy.test.js dist/tests/registry.test.js dist/tests/config.test.js dist/tests/pipeline.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "demo": "node examples/run-demo.js",
+    "start": "node dist/src/server.js"
+  },
+  "dependencies": {
+    "acorn": "8.12.1",
+    "fastify": "4.28.1",
+    "isolated-vm": "5.0.1",
+    "undici": "6.19.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.15",
+    "typescript": "5.5.4"
+  }
+}

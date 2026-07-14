@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDE
+.idea/
+.vscode/
+*.swp
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Build output
+dist/
+build/
+release/
+*.tsbuildinfo
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Misc
+*.db
+*.db-wal
+*.db-shm
+*.tmp

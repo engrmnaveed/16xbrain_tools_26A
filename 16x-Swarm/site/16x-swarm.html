@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>16x-Swarm — Multi-Agent Collaboration Matrix | 16xBrains Tools</title>
+<meta name="description" content="A desktop app for macOS and Windows that visualizes autonomous AI agents — Planner, Coder, QA — collaborating on your coding tasks in real time. Powered by OpenRouter." />
+<meta property="og:title" content="16x-Swarm — Multi-Agent Collaboration Matrix" />
+<meta property="og:description" content="Watch autonomous AI agents plan, code, and QA each other in real time. Free desktop tool by 16xBrains." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#07090f; --bg2:#0c101a; --bg3:#111726; --line:#1d2740;
+    --text:#d7e0f2; --dim:#6b7a99;
+    --cyan:#38d6ff; --violet:#a78bfa; --amber:#fbbf24; --ok:#34d399; --err:#f87171;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:'Sora',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
+    background-image:radial-gradient(ellipse 80% 40% at 50% -5%,rgba(56,214,255,.08),transparent),
+                     radial-gradient(ellipse 50% 30% at 85% 40%,rgba(167,139,250,.06),transparent)}
+  a{color:var(--cyan)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* nav */
+  nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+  .brand{font-weight:800;font-size:18px;letter-spacing:1px;color:var(--text);text-decoration:none}
+  .brand span{background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .crumb a:hover{color:var(--cyan)}
+
+  /* hero */
+  .hero{text-align:center;padding:64px 0 40px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--cyan);
+    border:1px solid rgba(56,214,255,.35);border-radius:999px;padding:6px 16px;margin-bottom:24px}
+  h1{font-size:clamp(34px,5.5vw,58px);font-weight:800;line-height:1.12;letter-spacing:-1px}
+  h1 em{font-style:normal;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{max-width:640px;margin:20px auto 0;color:var(--dim);font-size:17px}
+  .cta-row{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:14px;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;transition:.15s}
+  .btn.primary{background:linear-gradient(135deg,#0891b2,#2563eb);color:#fff}
+  .btn.primary:hover{filter:brightness(1.2)}
+  .btn.secondary{border:1px solid var(--line);color:var(--text);background:var(--bg3)}
+  .btn.secondary:hover{border-color:var(--cyan)}
+  .cta-note{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:14px}
+
+  /* live mock */
+  .mock{margin:56px auto 0;max-width:960px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.55)}
+  .mock-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .mock-title{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:10px;letter-spacing:1px}
+  .bus{position:relative;height:84px;border-bottom:1px solid var(--line)}
+  .bus svg{width:100%;height:100%}
+  .bus-line{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:5 6}
+  .node-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;font-weight:700}
+  .packet{filter:drop-shadow(0 0 5px currentColor)}
+  .terms{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .term{border-right:1px solid var(--line);padding:14px;min-height:230px;font-family:var(--mono);font-size:10.5px;line-height:1.6}
+  .term:last-child{border-right:none}
+  .term h4{font-size:11px;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .led{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .t-planner h4{color:var(--cyan)} .t-coder h4{color:var(--violet)} .t-qa h4{color:var(--amber)}
+  .term pre{white-space:pre-wrap;word-break:break-word;color:#9fb0d0;min-height:150px}
+  .caret{animation:blink .7s infinite}
+  @keyframes blink{50%{opacity:.15}}
+  .rej{color:var(--err)} .app-ok{color:var(--ok)}
+
+  /* sections */
+  section{padding:72px 0}
+  h2{font-size:30px;font-weight:800;letter-spacing:-.5px;text-align:center}
+  .lead{text-align:center;color:var(--dim);max-width:620px;margin:12px auto 44px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:24px}
+  .card .ico{font-size:20px;margin-bottom:12px;display:block}
+  .card h3{font-size:15px;margin-bottom:8px}
+  .card p{font-size:13.5px;color:var(--dim)}
+  .card code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--amber)}
+
+  /* steps */
+  .steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+  .step{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:24px;position:relative}
+  .step::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:var(--mono);
+    font-size:12px;color:var(--cyan);letter-spacing:2px;display:block;margin-bottom:10px}
+  .step h3{font-size:14px;margin-bottom:6px}
+  .step p{font-size:13px;color:var(--dim)}
+
+  /* docs */
+  details{background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  summary{cursor:pointer;padding:16px 20px;font-weight:600;font-size:14.5px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::after{content:'+';font-family:var(--mono);color:var(--cyan);font-size:16px}
+  details[open] summary::after{content:'–'}
+  summary:hover{color:var(--cyan)}
+  .d-body{padding:0 20px 18px;font-size:13.5px;color:#b9c4dc}
+  .d-body p{margin-bottom:8px}
+  .d-body code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--amber)}
+  .d-body b{color:var(--text)}
+
+  /* dual use */
+  .dual{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.dual{grid-template-columns:1fr}}
+  .dual .card h3{font-family:var(--mono);letter-spacing:2px;font-size:12px}
+  .dual .card:first-child h3{color:var(--cyan)} .dual .card:last-child h3{color:var(--violet)}
+  .dual .card p{font-size:14px;color:#b9c4dc}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:36px 0;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+  footer a{color:var(--dim);text-decoration:none} footer a:hover{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a class="brand" href="https://16xbrains.com"><span>16x</span>Brains</a>
+    <span class="crumb"><a href="https://16xbrains.com">Home</a> / <a href="https://16xbrains.com/tools">Tools</a> / 16x-Swarm</span>
+  </nav>
+
+  <header class="hero">
+    <span class="badge">FREE DESKTOP TOOL · MACOS + WINDOWS</span>
+    <h1>Watch AI agents<br /><em>argue your code into shape.</em></h1>
+    <p class="sub">16x-Swarm is a Multi-Agent Collaboration Matrix: a Planner writes the spec, a Coder implements it, and a ruthless QA agent rejects it until it's right — all streaming live across a visual message bus.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="#download">↓ Download for macOS</a>
+      <a class="btn secondary" href="#download">↓ Download for Windows</a>
+    </div>
+    <p class="cta-note">Open source (MIT) · bring your own OpenRouter key · built-in demo needs no key at all</p>
+
+    <!-- animated product mock -->
+    <div class="mock" aria-hidden="true">
+      <div class="mock-bar">
+        <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+        <span class="mock-title">16x-SWARM — MULTI-AGENT COLLABORATION MATRIX</span>
+      </div>
+      <div class="bus">
+        <svg viewBox="0 0 1000 84" preserveAspectRatio="none">
+          <path class="bus-line" d="M 80 46 Q 220 20 360 46"/>
+          <path class="bus-line" d="M 360 46 Q 500 20 640 46"/>
+          <path class="bus-line" d="M 640 46 Q 780 20 920 46"/>
+          <path class="bus-line" style="stroke:rgba(251,191,36,.25)" d="M 920 46 Q 780 78 640 46"/>
+          <circle id="pkt" class="packet" r="6" fill="#38d6ff"><animateMotion id="pktMotion" dur="1.6s" fill="freeze" path="M 80 46 Q 220 20 360 46"/></circle>
+          <g font-family="JetBrains Mono,monospace">
+            <circle cx="80" cy="46" r="14" fill="#0c101a" stroke="#8b93a8" stroke-width="1.5"/><circle cx="80" cy="46" r="4" fill="#8b93a8"/>
+            <text class="node-label" x="80" y="18" text-anchor="middle" fill="#8b93a8">USER</text>
+            <circle cx="360" cy="46" r="14" fill="#0c101a" stroke="#38d6ff" stroke-width="1.5"/><circle id="core-p" cx="360" cy="46" r="4" fill="#38d6ff"/>
+            <text class="node-label" x="360" y="18" text-anchor="middle" fill="#38d6ff">PLANNER</text>
+            <circle cx="640" cy="46" r="14" fill="#0c101a" stroke="#a78bfa" stroke-width="1.5"/><circle id="core-c" cx="640" cy="46" r="4" fill="#a78bfa"/>
+            <text class="node-label" x="640" y="18" text-anchor="middle" fill="#a78bfa">CODER</text>
+            <circle cx="920" cy="46" r="14" fill="#0c101a" stroke="#fbbf24" stroke-width="1.5"/><circle id="core-q" cx="920" cy="46" r="4" fill="#fbbf24"/>
+            <text class="node-label" x="920" y="18" text-anchor="middle" fill="#fbbf24">QA</text>
+          </g>
+        </svg>
+      </div>
+      <div class="terms">
+        <div class="term t-planner"><h4><span class="led" style="background:#38d6ff"></span>PLANNER</h4><pre id="tp"></pre></div>
+        <div class="term t-coder"><h4><span class="led" style="background:#a78bfa"></span>CODER</h4><pre id="tc"></pre></div>
+        <div class="term t-qa"><h4><span class="led" style="background:#fbbf24"></span>QA</h4><pre id="tq"></pre></div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Not another chatbot.</h2>
+    <p class="lead">A window into how autonomous AI systems actually work — the same architecture behind AutoGen- and LangGraph-style agent stacks, made visible.</p>
+    <div class="grid">
+      <div class="card"><span class="ico">⇄</span><h3>Live message bus</h3><p>Data packets literally travel between agents. Watch the spec hand-off, the code delivery, and the rejection bounce back — every hop animated in real time.</p></div>
+      <div class="card"><span class="ico">⚖</span><h3>Adversarial QA loop</h3><p>The QA agent must open every review with <code>VERDICT: APPROVE</code> or <code>VERDICT: REJECT</code>. Rejections feed numbered issues back to the Coder — up to 8 retry iterations.</p></div>
+      <div class="card"><span class="ico">⚡</span><h3>Any model, per agent</h3><p>Powered by OpenRouter: route each agent to a different vendor. A Claude coder reviewed by a GPT QA avoids self-grading bias.</p></div>
+      <div class="card"><span class="ico">✦</span><h3>AI woven in, not bolted on</h3><p><b>Refine with AI</b> sharpens your prompt before dispatch; <b>Explain run</b> reads the full agent trace and root-causes failures. No chat window in sight.</p></div>
+      <div class="card"><span class="ico">◉</span><h3>Trace Inspector</h3><p>Every dispatch, verdict, timing, and token count logged. Click any event for the raw payload, or export the whole run as JSON.</p></div>
+      <div class="card"><span class="ico">▶</span><h3>Zero-cost demo mode</h3><p>A scripted run — buggy code, rejection, fix, approval — plays out the full loop with no API key and no spend. Demo it to anyone, anywhere.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <p class="lead">One prompt in. Three agents negotiate. Approved code out.</p>
+    <div class="steps">
+      <div class="step"><h3>You dispatch a task</h3><p>"Write a Python script to scrape a site and write unit tests." Optionally let ✦ AI refine it first.</p></div>
+      <div class="step"><h3>Planner writes the spec</h3><p>Objective, deliverables, constraints, and numbered acceptance criteria the QA will enforce.</p></div>
+      <div class="step"><h3>Coder implements</h3><p>Complete, runnable files — then hands them across the bus for review.</p></div>
+      <div class="step"><h3>QA rejects until it's right</h3><p>Concrete, numbered issues bounce back to the Coder. The loop repeats until <b>VERDICT: APPROVE</b>.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two tools in one</h2>
+    <p class="lead"></p>
+    <div class="dual">
+      <div class="card"><h3>PUBLIC SHOWCASE</h3><p>Put a bleeding-edge autonomous AI system on any screen at a meetup, client demo, or sales call. Demo mode means it always works — no keys, no cost, no network surprises.</p></div>
+      <div class="card"><h3>INTERNAL UTILITY</h3><p>The exported trace schema (<code>flow</code>, <code>verdict</code>, <code>agent:done</code>…) doubles as a visual debugging harness for tracing logic loops and communication failures in multi-agent microservice architectures.</p></div>
+    </div>
+  </section>
+
+  <section id="docs">
+    <h2>Documentation</h2>
+    <p class="lead">Everything you need — also built into the app under <b>Docs</b>.</p>
+
+    <details open>
+      <summary>Quick start</summary>
+      <div class="d-body">
+        <p><b>1.</b> Download and open 16x-Swarm, then hit <b>▶ Demo</b> — a scripted run shows the full plan → code → reject → fix → approve loop with zero setup.</p>
+        <p><b>2.</b> For real runs: open <b>Settings</b>, paste an API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>, and hit <b>Test</b>. The key is encrypted at rest with your OS keychain and only ever sent to OpenRouter.</p>
+        <p><b>3.</b> Type a coding task and press <b>⚡ Run Swarm</b> (⌘/Ctrl+Enter). Copy the approved code straight from the Coder terminal.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Choosing models per agent</summary>
+      <div class="d-body">
+        <p>Any OpenRouter model ID works in any slot. Patterns that work well:</p>
+        <p><b>Adversarial review:</b> <code>anthropic/claude-sonnet-4</code> as Coder + <code>openai/gpt-4o</code> as QA — cross-vendor review is more critical than self-review.</p>
+        <p><b>Budget:</b> <code>deepseek/deepseek-chat-v3-0324</code> everywhere — full runs for pennies.</p>
+        <p><b>Fast specs:</b> a small model (e.g. <code>openai/gpt-4o-mini</code>) as Planner — specs are short; save the strong model for code.</p>
+      </div>
+    </details>
+    <details>
+      <summary>AI assistance features</summary>
+      <div class="d-body">
+        <p><b>✦ Refine with AI</b> rewrites a vague prompt into a specific, testable task before dispatch. Better input → tighter spec → fewer rejections → cheaper runs.</p>
+        <p><b>✦ Explain run</b> (in the Trace Inspector) feeds the entire inter-agent event log to your assist model and returns a plain-language root-cause: why QA rejected, where the loop stalled, and how to fix your prompt or model line-up.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Debugging with the Trace Inspector</summary>
+      <div class="d-body">
+        <p>Open <b>Trace</b> for the full event log: dispatches, hand-offs, verdicts, per-agent latency and token counts. Click any row for raw JSON; <b>Export JSON</b> saves the run.</p>
+        <p><b>Repeated REJECT on the same issue</b> → the Coder model can't satisfy that criterion; upgrade it or simplify the task. <b>VERDICT: UNKNOWN</b> → the QA model ignored the output contract; pick a more instruction-following model. <b>MAX RETRIES HIT</b> → raise Max iterations or run ✦ Explain.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Privacy, cost & FAQ</summary>
+      <div class="d-body">
+        <p><b>Where does my data go?</b> Straight from your machine to OpenRouter — there is no 16xBrains backend or telemetry.</p>
+        <p><b>Cost?</b> A typical three-agent run with two iterations is 5–15k tokens. With budget models that's well under a cent.</p>
+        <p><b>Languages?</b> Any — say "in Rust" or "as a React component" in your prompt.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="download" style="text-align:center">
+    <h2>Get 16x-Swarm</h2>
+    <p class="lead">Free & open source under MIT. Installers for both platforms, or build from source in two commands.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="/downloads/16x-Swarm.dmg">↓ macOS (.dmg)</a>
+      <a class="btn primary" href="/downloads/16x-Swarm-Setup.exe">↓ Windows (.exe)</a>
+      <a class="btn secondary" href="https://github.com/16xbrains/16x-swarm" target="_blank" rel="noopener">⌥ Source on GitHub</a>
+    </div>
+    <p class="cta-note">from source: <code style="font-family:var(--mono)">npm install && npm run dev</code> · requires Node ≥ 18</p>
+  </section>
+
+  <footer>
+    <p>© 2026 <a href="https://16xbrains.com">16xBrains</a> · 16x-Swarm is MIT licensed · <a href="https://16xbrains.com/tools">more tools</a></p>
+  </footer>
+</div>
+
+<script>
+/* ---- hero mock animation: scripted swarm loop ---- */
+(function(){
+  const tp=document.getElementById('tp'),tc=document.getElementById('tc'),tq=document.getElementById('tq');
+  const pkt=document.getElementById('pkt');
+  const paths={
+    up:'M 80 46 Q 220 20 360 46', pc:'M 360 46 Q 500 20 640 46',
+    cq:'M 640 46 Q 780 20 920 46', qc:'M 920 46 Q 780 78 640 46'
+  };
+  const colors={up:'#38d6ff',pc:'#38d6ff',cq:'#a78bfa',qc:'#fbbf24'};
+
+  function send(path){
+    const old=pkt.querySelector('animateMotion'); if(old) old.remove();
+    pkt.setAttribute('fill',colors[path]);
+    const m=document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+    m.setAttribute('dur','1.4s'); m.setAttribute('fill','freeze'); m.setAttribute('path',paths[path]);
+    pkt.appendChild(m); m.beginElement?.();
+  }
+
+  function type(el,text,speed,cb){
+    let i=0; el.innerHTML='';
+    const caret=()=>'<span class="caret">▊</span>';
+    (function tick(){
+      i+=1+Math.floor(Math.random()*3);
+      el.innerHTML=text.slice(0,i).replace(/VERDICT: REJECT/,'<span class="rej">VERDICT: REJECT</span>').replace(/VERDICT: APPROVE/,'<span class="app-ok">VERDICT: APPROVE</span>')+(i<text.length?caret():'');
+      if(i<text.length) setTimeout(tick,speed);
+      else cb&&setTimeout(cb,600);
+    })();
+  }
+
+  const SPEC='## Objective\nScrape quotes.toscrape.com\nwith unit tests.\n\n## Acceptance Criteria\n1. parse text, author, tags\n2. raise ScraperError on non-200\n3. tests run offline';
+  const V1='def fetch_page(url):\n    resp = requests.get(url)\n    return resp.text\n    # no status check…\n\ndef parse_quotes(html):\n    # tags missing…';
+  const R1='VERDICT: REJECT\n\n1. No status-code check —\n   criterion 2 FAILS\n2. tags field missing —\n   criterion 1 FAILS';
+  const V2='def fetch_page(url):\n    resp = requests.get(url)\n    if resp.status_code != 200:\n        raise ScraperError(...)\n    return resp.text\n\n"tags": [t.text for t in\n         q.select(".tag")] ✓';
+  const R2='VERDICT: APPROVE\n\nAll acceptance criteria\npass. Tests are offline,\nerrors raise ScraperError.\nShip it.';
+
+  function loop(){
+    tp.textContent='';tc.textContent='';tq.textContent='';
+    send('up');
+    setTimeout(()=>type(tp,SPEC,26,()=>{
+      send('pc');
+      setTimeout(()=>type(tc,V1,22,()=>{
+        send('cq');
+        setTimeout(()=>type(tq,R1,24,()=>{
+          send('qc');
+          setTimeout(()=>type(tc,V2,20,()=>{
+            send('cq');
+            setTimeout(()=>type(tq,R2,24,()=>setTimeout(loop,4200)),1400);
+          }),1400);
+        }),1400);
+      }),1400);
+    }),1200);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>
