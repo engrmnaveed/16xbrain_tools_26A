@@ -1,0 +1,51 @@
+{
+  "name": "16xbrains-tools-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for the 16xBrains tools: RAG Explorer, Swarm, CodeGraph, DataFlux, ForgeDB, Gateway, SelfHeal, and SchemaMind.",
+  "workspaces": [
+    "16x-RAG-Explorer",
+    "16x-Swarm",
+    "16xCodeGraph",
+    "16xDataFlux",
+    "16xForgeDB",
+    "16xGateway",
+    "16xSelfHeal",
+    "16xShemaMind/schemamind"
+  ],
+  "scripts": {
+    "rag-explorer:dev": "npm run dev --workspace=16x-RAG-Explorer",
+    "rag-explorer:build": "npm run build --workspace=16x-RAG-Explorer",
+    "rag-explorer:start": "npm run start --workspace=16x-RAG-Explorer",
+    "rag-explorer:test": "npm run test --workspace=16x-RAG-Explorer",
+
+    "swarm:dev": "npm run dev --workspace=16x-Swarm",
+    "swarm:build": "npm run build --workspace=16x-Swarm",
+    "swarm:start": "npm run start --workspace=16x-Swarm",
+
+    "codegraph:dev": "npm run dev --workspace=16xCodeGraph",
+    "codegraph:dev:web": "npm run dev:web --workspace=16xCodeGraph",
+    "codegraph:build": "npm run build --workspace=16xCodeGraph",
+
+    "dataflux:dev": "npm run dev --workspace=16xDataFlux",
+    "dataflux:build": "npm run build --workspace=16xDataFlux",
+    "dataflux:start": "npm run start --workspace=16xDataFlux",
+    "dataflux:test": "npm run test --workspace=16xDataFlux",
+
+    "forgedb:dev": "npm run dev --workspace=16xForgeDB",
+    "forgedb:build": "npm run build --workspace=16xForgeDB",
+    "forgedb:app:dev": "npm run app:dev --workspace=16xForgeDB",
+
+    "gateway:build": "npm run build --workspace=16xGateway",
+    "gateway:start": "npm run start --workspace=16xGateway",
+    "gateway:test": "npm run test --workspace=16xGateway",
+
+    "selfheal:start": "npm run start --workspace=16xSelfHeal",
+    "selfheal:test": "npm run test --workspace=16xSelfHeal",
+
+    "schemamind:dev": "npm run dev --workspace=16xShemaMind/schemamind",
+    "schemamind:build": "npm run build --workspace=16xShemaMind/schemamind",
+    "schemamind:start": "npm run start --workspace=16xShemaMind/schemamind",
+    "schemamind:test": "npm run test --workspace=16xShemaMind/schemamind"
+  }
+}
