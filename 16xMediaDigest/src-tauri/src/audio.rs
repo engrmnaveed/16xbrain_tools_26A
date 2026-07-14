@@ -20,6 +20,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExtractResult {
     pub wav_path: String,
     /// media duration in seconds (from ffprobe)
@@ -27,6 +28,7 @@ pub struct ExtractResult {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ProgressPayload<'a> {
     job_id: &'a str,
     percent: f32,
