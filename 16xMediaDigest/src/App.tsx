@@ -83,7 +83,16 @@ export default function App() {
   // (HTML5 DataTransfer in a webview does not expose filesystem paths).
   useEffect(() => {
     let unlisten: (() => void) | undefined;
-    getCurrentWebview()
+    let webview;
+    try {
+      webview = getCurrentWebview();
+    } catch {
+      // Not running inside a Tauri webview (e.g. plain browser preview) —
+      // drag-drop is unavailable there; the Browse button still degrades
+      // gracefully since @tauri-apps/plugin-dialog also no-ops.
+      return;
+    }
+    webview
       .onDragDropEvent((event) => {
         if (event.payload.type === "over") {
           setDragActive(true);

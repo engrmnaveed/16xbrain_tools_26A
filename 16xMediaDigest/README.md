@@ -33,19 +33,24 @@ Small models (4k–8k context) fail on long transcripts and multi-step instructi
 | Layer | Where | Why |
 |---|---|---|
 | FFmpeg extraction | Rust (`src-tauri/src/audio.rs`) | child process + async stdout parsing; UI never blocks |
-| whisper.cpp | Rust (spawn `whisper-cli`) | same pattern as ffmpeg; progress via stderr `[MM:SS.mmm]` lines |
+| whisper.cpp | Rust (spawn `whisper-cli`) | same pattern as ffmpeg; progress via stderr `progress = NN%` lines (`--print-progress`) |
 | Smart chunker | TS (`src/lib/chunker.ts`) | pure function, unit-testable, no I/O |
 | LLMService | TS (`src/lib/llm/LLMService.ts`) | `fetch` from webview: Ollama whitelists `tauri://*` origins by default; OpenRouter has open CORS |
 | Pipeline loop + UI | React | sequential async loop with AbortController; progress state drives the bar |
 
 Non-blocking guarantee: heavy work is child processes managed by Rust (`tokio::process`), streamed to the UI as Tauri events (`extract://progress`, `transcribe://progress`). LLM calls are network-bound `fetch`es — inherently async in the webview. Nothing CPU-heavy runs on the UI thread.
 
-## Key files (implemented so far)
+## Key files
 
 ```
 src/lib/chunker.ts            Smart Chunking Algorithm (deterministic, Urdu/English)
 src/lib/llm/LLMService.ts     Provider abstraction: Ollama + OpenRouter, retry, timeout, digest prompt
+src/lib/tauri.ts              Typed wrapper around the extract/transcribe Tauri commands + events
+src/pipeline/runDigest.ts     Orchestrates extract → transcribe (cached) → chunk → digest → compile
+src/pipeline/compileMarkdown.ts   Stitches per-chunk digests into the final timestamped Markdown
+src/App.tsx                   Drop zone, language toggle, provider settings, progress bar, digest viewer
 src-tauri/src/audio.rs        FFmpeg 16kHz WAV extraction with progress events
+src-tauri/src/transcribe.rs   whisper-cli transcription, JSON parsing, progress events
 site/media-digest.html        Tools page for 16xbrains.com with built-in docs
 ```
 
@@ -82,12 +87,25 @@ Provider switching is `service.updateSettings(newSettings)` — the pipeline cod
 
 Binary resolution prefers a bundled sidecar (`src-tauri/binaries/ffmpeg-<triple>`) and falls back to PATH (`brew install ffmpeg`).
 
-## Remaining components (next iterations)
+## whisper.cpp transcription (transcribe.rs)
 
-- `src-tauri/src/transcribe.rs` — spawn `whisper-cli -m ggml-small.bin -l auto -oj` (or `-l ur` / `-l en` from the manual toggle), parse JSON output into `WhisperSegment[]`, stream progress.
-- `src/pipeline/runDigest.ts` — sequential loop: for each chunk → `digestChunk()` → update `Processing chunk i/N`.
-- `src/pipeline/compileMarkdown.ts` — stitch sections under `## [start–end]` headings + title/metadata header, copy-to-clipboard.
-- React UI: drop zone, language toggle, provider settings, stage progress bar, digest viewer.
+`invoke("transcribe_audio", { wavPath, jobId, modelPath, language })`:
+
+1. Spawns `whisper-cli -m <modelPath> -f <wavPath> -l <auto|ur|en> -oj -of <cache>/<jobId> --print-progress -nt`.
+2. Parses `progress = NN%` lines from stderr, emits `transcribe://progress` `{ jobId, percent }` events.
+3. Reads the `-oj` JSON sidecar (`<jobId>.json`) and maps `transcription[].offsets` (ms) + `text` into `WhisperSegment[]`.
+4. Returns `{ segments, detectedLanguage }`.
+
+## Pipeline orchestration (runDigest.ts)
+
+`runDigest()` ties the whole thing together for the React UI:
+
+1. If the source file path isn't already in the in-memory transcript cache: `extract_audio` → `transcribe_audio`, cache the result. This is what makes "rerun cheaply" (switch provider/model without re-transcribing) work.
+2. `chunkTranscript()` on the cached segments.
+3. Sequential `llm.digestChunk()` per chunk, reporting `{ kind: "digesting", index, total }` — this drives the `Processing chunk i/N` status line.
+4. `compileMarkdown()` stitches the per-chunk digests under `## [start–end]` headings with a title/metadata header.
+
+The React UI (`src/App.tsx`) wires this to a drop zone (native Tauri drag-drop, real filesystem paths — not the browser File API), a language toggle, provider settings persisted to `localStorage`, a progress bar, and a copy-to-clipboard digest viewer.
 
 ## Setup (dev)
 
@@ -97,5 +115,21 @@ brew install whisper-cpp                 # provides whisper-cli
 # model with good Urdu: small or medium multilingual
 curl -L -o ggml-small.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin
 ollama pull gemma2:9b                    # or qwen2.5:7b for stronger Urdu
-npm install && npm run tauri dev
+
+npm install
+npm run app:dev     # tauri dev — requires Rust (rustc/cargo) and the Tauri system deps
 ```
+
+Frontend-only checks (no Rust toolchain required):
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run test        # chunker unit tests (tsx src/lib/chunker.test.ts)
+npm run build        # tsc --noEmit && vite build
+```
+
+## Status
+
+- **Frontend (TS/React):** builds, type-checks, and the chunker's 21 unit tests pass. The UI was smoke-tested standalone in a browser (`vite build && vite preview`) — outside a real Tauri shell, `invoke()` calls to the Rust commands will reject, which the UI surfaces as an error rather than crashing.
+- **Rust/Tauri backend:** written to compile against Tauri 2 conventions (mirrors this monorepo's `16xForgeDB` app, which uses the same stack), but **not compiled** — this environment has no `rustc`/`cargo` installed, so `cargo check` / `npm run app:dev` / `npm run app:build` are unverified. Run `npm run app:dev` on a machine with the Rust toolchain and Tauri's system dependencies installed to confirm the desktop shell builds and to exercise the real ffmpeg → whisper.cpp → LLM pipeline end-to-end.
+- API key storage currently uses `localStorage`, not the macOS Keychain the tools page describes — a real Keychain integration (e.g. `tauri-plugin-stronghold` or the `keyring` crate) is a follow-up.
