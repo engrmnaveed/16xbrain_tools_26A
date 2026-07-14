@@ -113,6 +113,7 @@ function createWindow() {
     minHeight: 700,
     backgroundColor: '#0a0e17',
     title: '16x SelfHeal — Self-Healing System Visualizer',
+    icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

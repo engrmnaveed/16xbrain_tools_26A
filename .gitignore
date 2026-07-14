@@ -20,6 +20,15 @@ build/
 release/
 *.tsbuildinfo
 
+# electron-builder reads app icons (icon.icns/.ico/.png) from each app's
+# build/ dir (its "buildResources" folder) — that's committed source, not
+# build output, so un-ignore it specifically.
+!16x-RAG-Explorer/build/
+!16x-Swarm/build/
+!16xDataFlux/build/
+!16xSelfHeal/build/
+!16xShemaMind/build/
+
 # Rust / Tauri
 src-tauri/target/
 src-tauri/gen/schemas/

@@ -37,13 +37,15 @@
   "build": {
     "appId": "com.16xbrains.ragexplorer",
     "productName": "RAG Explorer",
-    "directories": { "output": "release" },
+    "directories": { "output": "release", "buildResources": "build" },
     "files": ["dist/**/*", "electron/**/*", "package.json"],
     "mac": {
       "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
       "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }]
     },
     "win": {
+      "icon": "build/icon.ico",
       "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }

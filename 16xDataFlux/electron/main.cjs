@@ -27,6 +27,7 @@ function createWindow() {
     minWidth: 1080,
     minHeight: 700,
     backgroundColor: '#0a0e1a',
+    icon: path.join(__dirname, '../build/icon.png'),
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),

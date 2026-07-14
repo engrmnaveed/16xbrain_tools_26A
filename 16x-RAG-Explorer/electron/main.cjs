@@ -16,6 +16,7 @@ function createWindow() {
     minHeight: 700,
     title: 'RAG Explorer — 16xBrains',
     backgroundColor: '#07080f',
+    icon: path.join(__dirname, '../build/icon.png'),
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
